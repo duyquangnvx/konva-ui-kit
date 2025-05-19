@@ -36,9 +36,8 @@ export class Button extends Component<ButtonOptions> {
 
     constructor(options: ButtonOptions = {} as ButtonOptions) {
         super(options);
-    }
 
-    protected initWithOptions(options: ButtonOptions) {
+        // Set options
         this.text = options.text || this.text;
         this.fontSize = options.fontSize || this.fontSize;
         this.fontFamily = options.fontFamily || this.fontFamily;
@@ -51,11 +50,11 @@ export class Button extends Component<ButtonOptions> {
         this.borderWidth = options.borderWidth || this.borderWidth;
         this.borderColor = options.borderColor || this.borderColor;
 
-        super.initWithOptions(options);
+        // Initialize
+        this.init();
     }
 
-    protected init() {
-        super.init();
+    private init() {
 
         // Create background rect
         this.background = new Konva.Rect({

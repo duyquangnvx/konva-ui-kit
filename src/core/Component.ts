@@ -21,16 +21,6 @@ export class Component<T extends ComponentOptions> extends Konva.Group {
             opacity: options.opacity || 1,
             listening: options.listening || true,
         });
-        
-        this.initWithOptions(options);
-    }
-
-    protected initWithOptions(options: T) {
-        this.init();
-    }
-
-    protected init() {
-        
     }
 
     setSize(size: { width: number, height: number }): this {

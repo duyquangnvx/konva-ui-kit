@@ -29,7 +29,7 @@ export default defineConfig({
 	// Resolve alias
 	resolve: {
 		alias: {
-			'konva-ui-kit': resolve(__dirname, 'src/index.js')
+			'konva-ui-kit': resolve(__dirname, 'src/index.ts')
 		}
 	},
 	

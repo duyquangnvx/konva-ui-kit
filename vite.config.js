@@ -30,7 +30,10 @@ export default defineConfig({
 			output: {
 				globals: {
 					konva: 'Konva'
-				}
+				},
+				// Đảm bảo các file là self-contained
+				inlineDynamicImports: true,
+				exports: 'named'
 			}
 		},
 		
@@ -47,14 +50,15 @@ export default defineConfig({
 	
 	// Support TypeScript
 	optimizeDeps: {
-		include: ['konva']
+		exclude: ['konva']
 	},
 	
 	plugins: [
 		dts({
 			include: ['src/**/*.ts'],
 			outDir: 'dist',
-			insertTypesEntry: true
+			insertTypesEntry: true,
+			rollupTypes: true // Tạo file .d.ts hợp nhất
 		})
 	]
 }); 

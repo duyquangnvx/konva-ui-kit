@@ -18,7 +18,7 @@ export type ScrollViewOptions = ComponentOptions & {
     bounceEnabled?: boolean;
     bounceStrength?: number;
     inertiaEnabled?: boolean;
-    inertiaDecay?: number;
+    inertiaDecay?: number; // Higher means less inertia (0.95 is good)
 
     contentWidth?: number;
     contentHeight?: number;
@@ -56,7 +56,7 @@ export class ScrollView extends Component<ScrollViewOptions> {
     private bounceEnabled: boolean = false;
     private bounceStrength: number = 0.2;
     private inertiaEnabled: boolean = true;
-    private inertiaDecay: number = 0.95;
+    private inertiaDecay: number = 0.95; // Changed from 0.95 to 0.95 for better inertia feel
 
     // Content size
     private contentWidth: number = 0;
@@ -90,6 +90,8 @@ export class ScrollView extends Component<ScrollViewOptions> {
     private touchStartTime: number = 0;
     private lastTouchTime: number = 0;
     private animation: Konva.Animation | null = null;
+    private autoScrollActive: boolean = false;
+    private animationFrameId: number | null = null;
     
     constructor(options: ScrollViewOptions = {} as ScrollViewOptions) {
         super(options);
@@ -156,9 +158,6 @@ export class ScrollView extends Component<ScrollViewOptions> {
         
         // Set up event handlers
         this.setupEventHandlers();
-        
-        // Set up animation
-        this.setupAnimation();
     }
 
     /**
@@ -226,7 +225,7 @@ export class ScrollView extends Component<ScrollViewOptions> {
                 const scrollbarHeight = Math.max(minScrollbarSize, this.height() * heightRatio - padding * 2);
                 
                 // Calculate scrollbar position
-                const scrollRatio = this.scrollY / this.maxScrollY;
+                const scrollRatio = this.maxScrollY === 0 ? 0 : this.scrollY / this.maxScrollY;
                 const scrollableHeight = this.height() - scrollbarHeight - padding * 2;
                 const scrollbarY = padding + scrollableHeight * scrollRatio;
                 
@@ -248,7 +247,7 @@ export class ScrollView extends Component<ScrollViewOptions> {
                 const scrollbarWidth = Math.max(minScrollbarSize, this.width() * widthRatio - padding * 2);
                 
                 // Calculate scrollbar position
-                const scrollRatio = this.scrollX / this.maxScrollX;
+                const scrollRatio = this.maxScrollX === 0 ? 0 : this.scrollX / this.maxScrollX;
                 const scrollableWidth = this.width() - scrollbarWidth - padding * 2;
                 const scrollbarX = padding + scrollableWidth * scrollRatio;
                 
@@ -344,45 +343,11 @@ export class ScrollView extends Component<ScrollViewOptions> {
     }
 
     /**
-     * Set up animation for inertia scrolling
-     */
-    private setupAnimation() {
-        this.animation = new Konva.Animation((frame) => {
-            if (!frame) return;
-            
-            const timeDelta = frame.timeDiff / 1000; // Convert to seconds
-            
-            // Skip if no velocity or very small
-            if (Math.abs(this.scrollVelocity.x) < 0.1 && Math.abs(this.scrollVelocity.y) < 0.1) {
-                this.scrollVelocity = { x: 0, y: 0 };
-                this.animation?.stop();
-                return;
-            }
-            
-            // Apply inertia
-            if (this.inertiaEnabled) {
-                // Calculate distance to scroll based on velocity
-                const deltaX = this.scrollVelocity.x * timeDelta;
-                const deltaY = this.scrollVelocity.y * timeDelta;
-                
-                // Apply scroll
-                this.scrollBy(deltaX, deltaY);
-                
-                // Decay velocity
-                this.scrollVelocity.x *= this.inertiaDecay;
-                this.scrollVelocity.y *= this.inertiaDecay;
-            }
-        });
-    }
-
-    /**
      * Handle touch/mouse down event
      */
     private onTouchBegan(event: KonvaEventObject<MouseEvent | TouchEvent>) {
         // Stop any ongoing animation
-        if (this.animation?.isRunning()) {
-            this.animation.stop();
-        }
+        this.stopMomentumScroll();
         
         // Reset velocity
         this.scrollVelocity = { x: 0, y: 0 };
@@ -455,6 +420,37 @@ export class ScrollView extends Component<ScrollViewOptions> {
                 });
             }
             this.touchPoints = newTouchPoints;
+            
+            // Handle multi-touch (average movement for first two touches)
+            if (evt.touches.length >= 2 && this.touchPoints.length >= 2) {
+                let sumDeltaX = 0;
+                let sumDeltaY = 0;
+                
+                for (let i = 0; i < Math.min(2, evt.touches.length); i++) {
+                    const touch = evt.touches[i];
+                    const prevTouch = this.touchPoints.find(t => t.id === touch.identifier.toString());
+                    
+                    if (prevTouch) {
+                        sumDeltaX += prevTouch.x - touch.clientX;
+                        sumDeltaY += prevTouch.y - touch.clientY;
+                    }
+                }
+                
+                // Average of movements
+                const deltaX = sumDeltaX / 2;
+                const deltaY = sumDeltaY / 2;
+                
+                // Respect scroll direction setting
+                if (this.scrollDirection === 'vertical') {
+                    this.scrollBy(0, deltaY * this.scrollSpeed);
+                } else if (this.scrollDirection === 'horizontal') {
+                    this.scrollBy(deltaX * this.scrollSpeed, 0);
+                } else {
+                    this.scrollBy(deltaX * this.scrollSpeed, deltaY * this.scrollSpeed);
+                }
+                
+                return;
+            }
         } else {
             const evt = event.evt as MouseEvent;
             currentX = evt.clientX;
@@ -474,14 +470,15 @@ export class ScrollView extends Component<ScrollViewOptions> {
             this.scrollBy(dx, dy);
         }
         
-        // Calculate velocity
+        // Calculate velocity with improved scaling for better feel
         const now = Date.now();
         const timeDelta = (now - this.lastTouchTime) / 1000; // Convert to seconds
         
         if (timeDelta > 0) {
+            // Scale factor of 15 provides more realistic momentum
             this.scrollVelocity = {
-                x: (dx / timeDelta) * this.scrollSpeed,
-                y: (dy / timeDelta) * this.scrollSpeed,
+                x: (dx / timeDelta) * this.scrollSpeed * 15,
+                y: (dy / timeDelta) * this.scrollSpeed * 15,
             };
         }
         
@@ -515,9 +512,10 @@ export class ScrollView extends Component<ScrollViewOptions> {
         
         this.dragging = false;
         
-        // Start inertia animation if there's velocity
-        if (this.inertiaEnabled && (Math.abs(this.scrollVelocity.x) > 10 || Math.abs(this.scrollVelocity.y) > 10)) {
-            this.animation?.start();
+        // Start momentum scrolling if velocity is high enough
+        if (this.inertiaEnabled && 
+            (Math.abs(this.scrollVelocity.x) > 10 || Math.abs(this.scrollVelocity.y) > 10)) {
+            this.startMomentumScroll();
         }
     }
 
@@ -525,8 +523,74 @@ export class ScrollView extends Component<ScrollViewOptions> {
      * Handle touch/mouse cancel event
      */
     private onTouchCancelled(event: KonvaEventObject<MouseEvent | TouchEvent>) {
+        if (!this.dragging) {
+            return;
+        }
+        
         this.dragging = false;
-        this.scrollVelocity = { x: 0, y: 0 };
+        
+        // Start momentum scrolling if velocity is high enough
+        if (this.inertiaEnabled && 
+            (Math.abs(this.scrollVelocity.x) > 10 || Math.abs(this.scrollVelocity.y) > 10)) {
+            this.startMomentumScroll();
+        } else {
+            this.scrollVelocity = { x: 0, y: 0 };
+        }
+    }
+
+    /**
+     * Start momentum scrolling with requestAnimationFrame for smoother animation
+     */
+    private startMomentumScroll() {
+        // Stop any existing animation
+        this.stopMomentumScroll();
+        
+        this.autoScrollActive = true;
+        
+        const animate = () => {
+            if (!this.autoScrollActive) {
+                return;
+            }
+            
+            // Apply decay to slow down
+            this.scrollVelocity.x *= this.inertiaDecay;
+            this.scrollVelocity.y *= this.inertiaDecay;
+            
+            // Calculate time-based movement
+            const deltaX = this.scrollVelocity.x / 60; // Assuming 60fps
+            const deltaY = this.scrollVelocity.y / 60;
+            
+            // Apply scroll
+            this.scrollBy(deltaX, deltaY);
+            
+            // Stop animation when velocity becomes very small
+            if (Math.abs(this.scrollVelocity.x) < 0.5 && Math.abs(this.scrollVelocity.y) < 0.5) {
+                this.autoScrollActive = false;
+                this.animationFrameId = null;
+                return;
+            }
+            
+            // Continue animation
+            this.animationFrameId = requestAnimationFrame(animate);
+        };
+        
+        this.animationFrameId = requestAnimationFrame(animate);
+    }
+
+    /**
+     * Stop momentum scrolling
+     */
+    private stopMomentumScroll() {
+        this.autoScrollActive = false;
+        
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        
+        if (this.animation?.isRunning()) {
+            this.animation.stop();
+        }
     }
 
     /**
@@ -703,10 +767,8 @@ export class ScrollView extends Component<ScrollViewOptions> {
      * Override destroy to clean up
      */
     destroy(): this {
-        // Stop animation
-        if (this.animation) {
-            this.animation.stop();
-        }
+        // Stop momentum scrolling
+        this.stopMomentumScroll();
         
         // Clear timeout
         if (this.scrollbarFadeTimeout) {
@@ -731,6 +793,11 @@ export class ScrollView extends Component<ScrollViewOptions> {
      */
     getContentContainer() {
         return this.contentContainer;
+    }
+
+    setScrollDirection(direction: 'vertical' | 'horizontal' | 'both') {
+        this.scrollDirection = direction;
+        this.updateScrollbars();
     }
 }
 

@@ -322,8 +322,7 @@ export class ListView extends ScrollView {
      */
     setHorizontal(horizontal: boolean): void {
         this.horizontal = horizontal;
-        // Note: Cannot directly access private property scrollDirection
-        // Use appropriate ScrollView options/methods instead
+        this.setScrollDirection(horizontal ? 'horizontal' : 'vertical');
         this.renderList();
     }
 }

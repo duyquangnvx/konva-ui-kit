@@ -1,0 +1,43 @@
+# Các thư mục và file được sinh bởi npm
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Các file môi trường và cấu hình cá nhân
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Các file IDE và editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Các file build và output
+# Mở comment dưới đây nếu không muốn commit thư mục dist
+# /dist
+/build
+/coverage
+
+# Các file tạm
+.tmp/
+.temp/
+.cache/
+
+# File log
+logs/
+*.log
+
+# Các file khác
+.eslintcache
+.tsbuildinfo 
+/demo-dist
+/dist
+/dist

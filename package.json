@@ -1,0 +1,34 @@
+{
+  "name": "konva-ui-kit",
+  "version": "1.0.0",
+  "description": "\"UI components for Konva with TypeScript\"",
+  "homepage": "https://github.com/duyquangnvx/konva-ui-kit#readme",
+  "bugs": {
+    "url": "https://github.com/duyquangnvx/konva-ui-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duyquangnvx/konva-ui-kit.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "vite --config vite.demo.config.js",
+    "build": "vite build",
+    "build:demo": "vite build --config vite.demo.config.js",
+    "preview": "vite preview --config vite.demo.config.js"
+  },
+  "dependencies": {
+    "konva": "^9.3.20"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0",
+    "vite-plugin-singlefile": "^2.2.0"
+  }
+}

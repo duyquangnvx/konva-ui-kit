@@ -35,9 +35,9 @@ function setupButtonDemo() {
         height: 40,
         text: 'Click Me',
         backgroundColor: '#3498db',
+        backgroundCornerRadius: 6,
         hoverColor: '#2980b9',
         activeColor: '#1c638d',
-        cornerRadius: 6
     });
     
     basicButton.on('click', () => {
@@ -52,9 +52,9 @@ function setupButtonDemo() {
         height: 40,
         text: 'Rounded',
         backgroundColor: '#e74c3c',
+        backgroundCornerRadius: 20,
         hoverColor: '#c0392b',
         activeColor: '#922b21',
-        cornerRadius: 20,
         fontColor: '#ffffff'
     });
     
@@ -66,11 +66,11 @@ function setupButtonDemo() {
         height: 40,
         text: 'Bordered',
         backgroundColor: '#ffffff',
+        backgroundCornerRadius: 4,
+        backgroundBorderWidth: 2,
+        backgroundBorderColor: '#2ecc71',
         hoverColor: '#f8f9fa',
         activeColor: '#e9ecef',
-        cornerRadius: 4,
-        borderWidth: 2,
-        borderColor: '#2ecc71',
         fontColor: '#2ecc71'
     });
     
@@ -82,9 +82,9 @@ function setupButtonDemo() {
         height: 60,
         text: 'Large Button',
         backgroundColor: '#9b59b6',
+        backgroundCornerRadius: 8,
         hoverColor: '#8e44ad',
         activeColor: '#6c3483',
-        cornerRadius: 8,
         fontColor: '#ffffff',
         fontSize: 20
     });
@@ -97,9 +97,9 @@ function setupButtonDemo() {
         height: 40,
         text: 'Custom Font',
         backgroundColor: '#f1c40f',
+        backgroundCornerRadius: 0,
         hoverColor: '#f39c12',
         activeColor: '#d68910',
-        cornerRadius: 0,
         fontColor: '#2c3e50',
         fontFamily: 'Arial',
         fontSize: 16,
@@ -153,7 +153,7 @@ function setupLabelDemo() {
         fontSize: 16,
         fill: '#ffffff',
         backgroundColor: '#3498db',
-        cornerRadius: 4,
+        backgroundCornerRadius: 4,
         padding: 5,
         align: 'center',
         verticalAlign: 'middle'
@@ -184,7 +184,7 @@ function setupLabelDemo() {
         ellipsis: true,
         padding: 5,
         backgroundColor: '#f8f9fa',
-        cornerRadius: 4
+        backgroundCornerRadius: 4
     });
     
     // Multi-aligned label
@@ -199,7 +199,7 @@ function setupLabelDemo() {
         align: 'right',
         padding: 5,
         backgroundColor: '#f1c40f',
-        cornerRadius: 4
+        backgroundCornerRadius: 4
     });
     
     // Centered label
@@ -215,7 +215,7 @@ function setupLabelDemo() {
         verticalAlign: 'middle',
         padding: 5,
         backgroundColor: '#2ecc71',
-        cornerRadius: 20
+        backgroundCornerRadius: 20
     });
     
     // Auto-sized label
@@ -229,7 +229,7 @@ function setupLabelDemo() {
         fill: '#333333',
         padding: 10,
         backgroundColor: '#9b59b6',
-        cornerRadius: 4
+        backgroundCornerRadius: 4
     });
     
     // Resize to fit text
@@ -248,7 +248,7 @@ function setupLabelDemo() {
         align: 'center',
         padding: 5,
         backgroundColor: '#ecf0f1',
-        cornerRadius: 4,
+        backgroundCornerRadius: 4,
     });
     
     // Add all labels to the layer
@@ -294,9 +294,9 @@ function setupImageViewDemo() {
         height: 150,
         image: 'https://konvajs.org/assets/lion.png',
         backgroundColor: '#f0f0f0',
-        backgroundAlpha: 1,
+        backgroundOpacity: 1,
+        backgroundCornerRadius: 6,
         objectFit: 'contain',
-        borderRadius: 6
     });
     
     // Image với chế độ cover
@@ -307,9 +307,9 @@ function setupImageViewDemo() {
         height: 150,
         image: 'https://konvajs.org/assets/lion.png',
         backgroundColor: '#f0f0f0',
-        backgroundAlpha: 1,
+        backgroundOpacity: 1,
+        backgroundCornerRadius: 0,
         objectFit: 'cover',
-        borderRadius: 0
     });
     
     // Image với chế độ fill
@@ -320,9 +320,9 @@ function setupImageViewDemo() {
         height: 150,
         image: 'https://konvajs.org/assets/lion.png',
         backgroundColor: '#f0f0f0',
-        backgroundAlpha: 1,
-        objectFit: 'fill',
-        borderRadius: 0
+        backgroundOpacity: 1,
+        backgroundCornerRadius: 6,
+        objectFit: 'fill'
     });
     
     // Image với chế độ scale-down
@@ -333,9 +333,9 @@ function setupImageViewDemo() {
         height: 150,
         image: 'https://konvajs.org/assets/lion.png',
         backgroundColor: '#f0f0f0',
-        backgroundAlpha: 1,
+        backgroundOpacity: 1,
+        backgroundCornerRadius: 6,
         objectFit: 'scale-down',
-        borderRadius: 6
     });
     
     // Image có border và shadow
@@ -346,9 +346,10 @@ function setupImageViewDemo() {
         height: 150,
         image: 'https://konvajs.org/assets/lion.png',
         backgroundColor: '#ffffff',
-        borderWidth: 2,
-        borderColor: '#3498db',
-        borderRadius: 8,
+        backgroundBorderWidth: 2,
+        backgroundBorderColor: '#3498db',
+        backgroundCornerRadius: 8,
+        shadowEnabled: true,
         shadowColor: 'rgba(0,0,0,0.3)',
         shadowBlur: 10,
         shadowOffsetX: 5,

@@ -3,54 +3,23 @@ import { Component, ComponentOptions } from '../core/Component';
 
 export type ImageViewOptions = ComponentOptions & {
     image?: string | HTMLImageElement;
-    backgroundVisible?: boolean;
-    backgroundColor?: string;
-    backgroundAlpha?: number;
-    borderColor?: string;
-    borderWidth?: number;
-    borderRadius?: number;
-    shadowColor?: string;
-    shadowBlur?: number;
-    shadowOffsetX?: number;
-    shadowOffsetY?: number;
     objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 }
 
 export class ImageView extends Component<ImageViewOptions> {
     private image?: string | HTMLImageElement;
-    private backgroundVisible: boolean = true;
-    private backgroundColor: string = 'transparent';
-    private backgroundAlpha: number = 1;
-    private borderColor: string = '#000000';
-    private borderWidth: number = 0;
-    private borderRadius: number = 0;
-    private shadowColor: string = '#000000';
-    private shadowBlur: number = 0;
-    private shadowOffsetX: number = 0;
-    private shadowOffsetY: number = 0;
     private objectFit: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down' = 'contain';
 
     private imageObject: HTMLImageElement | null = null;
     private imageLoaded: boolean = false;
 
     private imageNode!: Konva.Image;
-    private background!: Konva.Rect;
     
     constructor(options: ImageViewOptions = {} as ImageViewOptions) {
         super(options);
 
         // Set options
         this.image = options.image || this.image;
-        this.backgroundVisible = options.backgroundVisible || this.backgroundVisible;
-        this.backgroundColor = options.backgroundColor || this.backgroundColor;
-        this.backgroundAlpha = options.backgroundAlpha || this.backgroundAlpha;
-        this.borderColor = options.borderColor || this.borderColor;
-        this.borderWidth = options.borderWidth || this.borderWidth;
-        this.borderRadius = options.borderRadius || this.borderRadius;
-        this.shadowColor = options.shadowColor || this.shadowColor;
-        this.shadowBlur = options.shadowBlur || this.shadowBlur;
-        this.shadowOffsetX = options.shadowOffsetX || this.shadowOffsetX;
-        this.shadowOffsetY = options.shadowOffsetY || this.shadowOffsetY;
         this.objectFit = options.objectFit || this.objectFit;
 
         // Initialize
@@ -58,22 +27,6 @@ export class ImageView extends Component<ImageViewOptions> {
     }
 
     private init() {
-        // Create background rect
-        this.background = new Konva.Rect({
-            width: this.width(),
-            height: this.height(),
-            fill: this.backgroundColor,
-            opacity: this.backgroundAlpha,
-            cornerRadius: this.borderRadius,
-            stroke: this.borderColor,
-            strokeWidth: this.borderWidth,
-            shadowColor: this.shadowColor,
-            shadowBlur: this.shadowBlur,
-            shadowOffsetX: this.shadowOffsetX,
-            shadowOffsetY: this.shadowOffsetY,
-            visible: this.backgroundVisible,
-        });
-     
         // Create image node
         this.imageNode = new Konva.Image({
             image: undefined,
@@ -82,7 +35,6 @@ export class ImageView extends Component<ImageViewOptions> {
             objectFit: this.objectFit,
         });
 
-        this.add(this.background);
         this.add(this.imageNode);
 
         if (this.image) {
@@ -253,56 +205,6 @@ export class ImageView extends Component<ImageViewOptions> {
         this.fitImage();
     }
 
-    setBackgroundVisible(backgroundVisible: boolean) {
-        this.backgroundVisible = backgroundVisible;
-        this.background.visible(backgroundVisible);
-    }
-    
-    setBackgroundColor(backgroundColor: string) {
-        this.backgroundColor = backgroundColor;
-        this.background.fill(backgroundColor);
-    }
-
-    setBackgroundAlpha(backgroundAlpha: number) {
-        this.backgroundAlpha = backgroundAlpha;
-        this.background.opacity(backgroundAlpha);
-    }
-
-    setBorderColor(borderColor: string) {
-        this.borderColor = borderColor;
-        this.background.stroke(borderColor);
-    }
-
-    setBorderWidth(borderWidth: number) {
-        this.borderWidth = borderWidth;
-        this.background.strokeWidth(borderWidth);       
-    }
-
-    setBorderRadius(borderRadius: number) {
-        this.borderRadius = borderRadius;
-        this.background.cornerRadius(borderRadius);
-    }
-
-    setShadowColor(shadowColor: string) {
-        this.shadowColor = shadowColor;
-        this.background.shadowColor(shadowColor);
-    }
-
-    setShadowBlur(shadowBlur: number) {
-        this.shadowBlur = shadowBlur;
-        this.background.shadowBlur(shadowBlur);
-    }
-
-    setShadowOffsetX(shadowOffsetX: number) {
-        this.shadowOffsetX = shadowOffsetX;
-        this.background.shadowOffsetX(shadowOffsetX);
-    }
-
-    setShadowOffsetY(shadowOffsetY: number) {
-        this.shadowOffsetY = shadowOffsetY;
-        this.background.shadowOffsetY(shadowOffsetY);
-    }
-    
     getImageWidth(): number {
         return this.imageObject?.naturalWidth || 0;
     }
@@ -313,10 +215,6 @@ export class ImageView extends Component<ImageViewOptions> {
 
     setSize(size: { width: number; height: number; }): this {
         super.setSize(size);
-
-        const { width, height } = size;
-        this.background.width(width);
-        this.background.height(height);
 
         this.fitImage();
 

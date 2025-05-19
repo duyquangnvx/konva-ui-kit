@@ -12,9 +12,6 @@ export type LabelOptions = ComponentOptions & {
     verticalAlign?: string;
     padding?: number;
     ellipsis?: boolean;
-    backgroundVisible?: boolean;
-    backgroundColor?: string;
-    cornerRadius?: number;
     autoSize?: boolean;
 }
 
@@ -29,13 +26,9 @@ export class Label extends Component<LabelOptions> {
     private verticalAlign: string = 'middle';
     private padding: number = 0;
     private ellipsis: boolean = false;
-    private backgroundVisible: boolean = false;
-    private backgroundColor: string = 'transparent';
-    private cornerRadius: number = 0;
     private autoSize: boolean = false;
 
     private textNode!: Konva.Text;
-    private background!: Konva.Rect;
 
     constructor(options: LabelOptions = {} as LabelOptions) {
         super(options);
@@ -51,9 +44,6 @@ export class Label extends Component<LabelOptions> {
         this.verticalAlign = options.verticalAlign || this.verticalAlign;
         this.padding = options.padding || this.padding;
         this.ellipsis = options.ellipsis || this.ellipsis;
-        this.backgroundVisible = options.backgroundVisible || this.backgroundVisible;
-        this.backgroundColor = options.backgroundColor || this.backgroundColor;
-        this.cornerRadius = options.cornerRadius || this.cornerRadius;
         this.autoSize = options.autoSize ?? this.autoSize;
 
         // Initialize
@@ -62,14 +52,6 @@ export class Label extends Component<LabelOptions> {
     
   
     private init() {
-        // Create background rect
-        this.background = new Konva.Rect({
-            width: this.width(),
-            height: this.height(),
-            fill: this.backgroundColor,
-            cornerRadius: this.cornerRadius,
-        });
-
         this.textNode = new Konva.Text({
             text: this.text,
             fontSize: this.fontSize,
@@ -86,7 +68,6 @@ export class Label extends Component<LabelOptions> {
         });
 
         // Add nodes to group
-        this.add(this.background);
         this.add(this.textNode);
 
         this.alignText();
@@ -157,28 +138,11 @@ export class Label extends Component<LabelOptions> {
         this.ellipsis = ellipsis;
         this.textNode.ellipsis(ellipsis);
     }
-
-    setBackgroundVisible(backgroundVisible: boolean) {
-        this.backgroundVisible = backgroundVisible;
-        this.background.visible(backgroundVisible);
-    }
-
-    setBackgroundColor(backgroundColor: string) {
-        this.backgroundColor = backgroundColor;
-        this.background.fill(backgroundColor);
-    }
-
-    setCornerRadius(cornerRadius: number) {
-        this.cornerRadius = cornerRadius;
-        this.background.cornerRadius(cornerRadius);
-    }
      
     setSize(size: { width: number, height: number }): this {
         super.setSize(size);
 
         const { width, height } = size;
-        this.background.width(width);
-        this.background.height(height);
 
         this.textNode.width(width);
         this.textNode.height(height);

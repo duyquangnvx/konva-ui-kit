@@ -59,7 +59,7 @@
             position: relative;
         }
         
-        #button-demo {
+        #button-demo, #label-demo, #imageview-demo {
             width: 100%;
             height: 100%;
         }
@@ -7672,15 +7672,15 @@ Ellipse.prototype._attrsAffectingSize = ["radiusX", "radiusY"];
 Factory_1$q.Factory.addComponentsGetterSetter(Ellipse, "radius", ["x", "y"]);
 Factory_1$q.Factory.addGetterSetter(Ellipse, "radiusX", 0, (0, Validators_1$q.getNumberValidator)());
 Factory_1$q.Factory.addGetterSetter(Ellipse, "radiusY", 0, (0, Validators_1$q.getNumberValidator)());
-var Image$1 = {};
-Object.defineProperty(Image$1, "__esModule", { value: true });
-Image$1.Image = void 0;
+var Image$2 = {};
+Object.defineProperty(Image$2, "__esModule", { value: true });
+Image$2.Image = void 0;
 const Util_1$7 = Util;
 const Factory_1$p = Factory;
 const Shape_1$a = Shape;
 const Global_1$a = Global;
 const Validators_1$p = Validators;
-class Image extends Shape_1$a.Shape {
+let Image$1 = class Image2 extends Shape_1$a.Shape {
   constructor(attrs) {
     super(attrs);
     this._loadListener = () => {
@@ -7782,7 +7782,7 @@ class Image extends Shape_1$a.Shape {
   static fromURL(url, callback, onError = null) {
     const img = Util_1$7.Util.createImageElement();
     img.onload = function() {
-      const image = new Image({
+      const image = new Image2({
         image: img
       });
       callback(image);
@@ -7791,20 +7791,20 @@ class Image extends Shape_1$a.Shape {
     img.crossOrigin = "Anonymous";
     img.src = url;
   }
-}
-Image$1.Image = Image;
-Image.prototype.className = "Image";
-(0, Global_1$a._registerNode)(Image);
-Factory_1$p.Factory.addGetterSetter(Image, "cornerRadius", 0, (0, Validators_1$p.getNumberOrArrayOfNumbersValidator)(4));
-Factory_1$p.Factory.addGetterSetter(Image, "image");
-Factory_1$p.Factory.addComponentsGetterSetter(Image, "crop", ["x", "y", "width", "height"]);
-Factory_1$p.Factory.addGetterSetter(Image, "cropX", 0, (0, Validators_1$p.getNumberValidator)());
-Factory_1$p.Factory.addGetterSetter(Image, "cropY", 0, (0, Validators_1$p.getNumberValidator)());
-Factory_1$p.Factory.addGetterSetter(Image, "cropWidth", 0, (0, Validators_1$p.getNumberValidator)());
-Factory_1$p.Factory.addGetterSetter(Image, "cropHeight", 0, (0, Validators_1$p.getNumberValidator)());
-var Label$1 = {};
-Object.defineProperty(Label$1, "__esModule", { value: true });
-Label$1.Tag = Label$1.Label = void 0;
+};
+Image$2.Image = Image$1;
+Image$1.prototype.className = "Image";
+(0, Global_1$a._registerNode)(Image$1);
+Factory_1$p.Factory.addGetterSetter(Image$1, "cornerRadius", 0, (0, Validators_1$p.getNumberOrArrayOfNumbersValidator)(4));
+Factory_1$p.Factory.addGetterSetter(Image$1, "image");
+Factory_1$p.Factory.addComponentsGetterSetter(Image$1, "crop", ["x", "y", "width", "height"]);
+Factory_1$p.Factory.addGetterSetter(Image$1, "cropX", 0, (0, Validators_1$p.getNumberValidator)());
+Factory_1$p.Factory.addGetterSetter(Image$1, "cropY", 0, (0, Validators_1$p.getNumberValidator)());
+Factory_1$p.Factory.addGetterSetter(Image$1, "cropWidth", 0, (0, Validators_1$p.getNumberValidator)());
+Factory_1$p.Factory.addGetterSetter(Image$1, "cropHeight", 0, (0, Validators_1$p.getNumberValidator)());
+var Label$2 = {};
+Object.defineProperty(Label$2, "__esModule", { value: true });
+Label$2.Tag = Label$2.Label = void 0;
 const Factory_1$o = Factory;
 const Shape_1$9 = Shape;
 const Group_1$1 = Group$1;
@@ -7823,7 +7823,7 @@ const ATTR_CHANGE_LIST$2 = [
   "pointerWidth",
   "pointerHeight"
 ], CHANGE_KONVA$1 = "Change.konva", NONE$1 = "none", UP = "up", RIGHT$1 = "right", DOWN = "down", LEFT$1 = "left", attrChangeListLen$1 = ATTR_CHANGE_LIST$2.length;
-class Label extends Group_1$1.Group {
+let Label$1 = class Label extends Group_1$1.Group {
   constructor(config) {
     super(config);
     this.on("add.konva", function(evt) {
@@ -7892,10 +7892,10 @@ class Label extends Group_1$1.Group {
       });
     }
   }
-}
-Label$1.Label = Label;
-Label.prototype.className = "Label";
-(0, Global_1$9._registerNode)(Label);
+};
+Label$2.Label = Label$1;
+Label$1.prototype.className = "Label";
+(0, Global_1$9._registerNode)(Label$1);
 class Tag extends Shape_1$9.Shape {
   _sceneFunc(context) {
     const width = this.width(), height = this.height(), pointerDirection = this.pointerDirection(), pointerWidth = this.pointerWidth(), pointerHeight = this.pointerHeight(), cornerRadius = this.cornerRadius();
@@ -7965,7 +7965,7 @@ class Tag extends Shape_1$9.Shape {
     };
   }
 }
-Label$1.Tag = Tag;
+Label$2.Tag = Tag;
 Tag.prototype.className = "Tag";
 (0, Global_1$9._registerNode)(Tag);
 Factory_1$o.Factory.addGetterSetter(Tag, "pointerDirection", NONE$1);
@@ -11422,8 +11422,8 @@ const Arc_1 = Arc$1;
 const Arrow_1 = Arrow$1;
 const Circle_1 = Circle$1;
 const Ellipse_1 = Ellipse$1;
-const Image_1 = Image$1;
-const Label_1 = Label$1;
+const Image_1 = Image$2;
+const Label_1 = Label$2;
 const Line_1 = Line$1;
 const Path_1 = Path$1;
 const Rect_1 = Rect$1;
@@ -11512,16 +11512,107 @@ class Component extends Konva.Group {
       opacity: options.opacity || 1,
       listening: options.listening || true
     });
-    this.initWithOptions(options);
+    this.backgroundEnabled = true;
+    this.backgroundColor = "transparent";
+    this.backgroundOpacity = 1;
+    this.backgroundCornerRadius = 0;
+    this.backgroundBorderWidth = 0;
+    this.backgroundBorderColor = "#000000";
+    this.shadowEnabled = false;
+    this.shadowColor = "#000000";
+    this.shadowBlur = 0;
+    this.shadowOffsetX = 0;
+    this.shadowOffsetY = 0;
+    this.backgroundEnabled = options.backgroundEnabled || this.backgroundEnabled;
+    this.backgroundColor = options.backgroundColor || this.backgroundColor;
+    this.backgroundOpacity = options.backgroundOpacity || this.backgroundOpacity;
+    this.backgroundCornerRadius = options.backgroundCornerRadius || this.backgroundCornerRadius;
+    this.backgroundBorderWidth = options.backgroundBorderWidth || this.backgroundBorderWidth;
+    this.backgroundBorderColor = options.backgroundBorderColor || this.backgroundBorderColor;
+    this.shadowEnabled = options.shadowEnabled || this.shadowEnabled;
+    this.shadowColor = options.shadowColor || this.shadowColor;
+    this.shadowBlur = options.shadowBlur || this.shadowBlur;
+    this.shadowOffsetX = options.shadowOffsetX || this.shadowOffsetX;
+    this.shadowOffsetY = options.shadowOffsetY || this.shadowOffsetY;
+    this.initBackground();
   }
-  initWithOptions(options) {
-    this.init();
+  initBackground() {
+    this.background = new Konva.Rect({
+      width: this.width(),
+      height: this.height(),
+      fill: this.backgroundColor,
+      opacity: this.backgroundOpacity,
+      cornerRadius: this.backgroundCornerRadius,
+      stroke: this.backgroundBorderColor,
+      strokeWidth: this.backgroundBorderWidth,
+      shadowColor: this.shadowColor,
+      shadowBlur: this.shadowBlur,
+      shadowOffsetX: this.shadowOffsetX,
+      shadowOffsetY: this.shadowOffsetY,
+      visible: this.backgroundEnabled
+    });
+    this.add(this.background);
   }
-  init() {
+  setBackgroundEnabled(backgroundEnabled) {
+    this.backgroundEnabled = backgroundEnabled;
+    this.background.visible(backgroundEnabled);
+    return this;
+  }
+  setBackgroundColor(backgroundColor) {
+    this.backgroundColor = backgroundColor;
+    this.background.fill(backgroundColor);
+    return this;
+  }
+  setBackgroundOpacity(backgroundOpacity) {
+    this.backgroundOpacity = backgroundOpacity;
+    this.background.opacity(backgroundOpacity);
+    return this;
+  }
+  setBackgroundCornerRadius(backgroundCornerRadius) {
+    this.backgroundCornerRadius = backgroundCornerRadius;
+    this.background.cornerRadius(backgroundCornerRadius);
+    return this;
+  }
+  setBackgroundBorderWidth(backgroundBorderWidth) {
+    this.backgroundBorderWidth = backgroundBorderWidth;
+    this.background.strokeWidth(backgroundBorderWidth);
+    return this;
+  }
+  setBackgroundBorderColor(backgroundBorderColor) {
+    this.backgroundBorderColor = backgroundBorderColor;
+    this.background.stroke(backgroundBorderColor);
+    return this;
+  }
+  setShadowEnabled(shadowEnabled) {
+    this.shadowEnabled = shadowEnabled;
+    this.background.shadowEnabled(shadowEnabled);
+    return this;
+  }
+  setShadowColor(shadowColor) {
+    this.shadowColor = shadowColor;
+    this.background.shadowColor(shadowColor);
+    return this;
+  }
+  setShadowBlur(shadowBlur) {
+    this.shadowBlur = shadowBlur;
+    this.background.shadowBlur(shadowBlur);
+    return this;
+  }
+  setShadowOffsetX(shadowOffsetX) {
+    this.shadowOffsetX = shadowOffsetX;
+    this.background.shadowOffsetX(shadowOffsetX);
+    return this;
+  }
+  setShadowOffsetY(shadowOffsetY) {
+    this.shadowOffsetY = shadowOffsetY;
+    this.background.shadowOffsetY(shadowOffsetY);
+    return this;
   }
   setSize(size) {
     this.width(size.width);
     this.height(size.height);
+    this.background.width(size.width);
+    this.background.height(size.height);
     return this;
   }
   update(deltaTime) {
@@ -11535,39 +11626,20 @@ class Button extends Component {
     this.fontFamily = "Arial";
     this.fontStyle = "normal";
     this.fontColor = "#000000";
-    this.backgroundColor = "#3498db";
     this.hoverColor = "#2980b9";
     this.activeColor = "#1c638d";
-    this.cornerRadius = 4;
-    this.borderWidth = 0;
-    this.borderColor = "#000000";
     this.isHovered = false;
     this.isActive = false;
-  }
-  initWithOptions(options) {
     this.text = options.text || this.text;
     this.fontSize = options.fontSize || this.fontSize;
     this.fontFamily = options.fontFamily || this.fontFamily;
     this.fontStyle = options.fontStyle || this.fontStyle;
     this.fontColor = options.fontColor || this.fontColor;
-    this.backgroundColor = options.backgroundColor || this.backgroundColor;
     this.hoverColor = options.hoverColor || this.hoverColor;
     this.activeColor = options.activeColor || this.activeColor;
-    this.cornerRadius = options.cornerRadius || this.cornerRadius;
-    this.borderWidth = options.borderWidth || this.borderWidth;
-    this.borderColor = options.borderColor || this.borderColor;
-    super.initWithOptions(options);
+    this.init();
   }
   init() {
-    super.init();
-    this.background = new Konva.Rect({
-      width: this.width(),
-      height: this.height(),
-      fill: this.backgroundColor,
-      cornerRadius: this.cornerRadius,
-      stroke: this.borderColor,
-      strokeWidth: this.borderWidth
-    });
     this.textNode = new Konva.Text({
       text: this.text,
       fontSize: this.fontSize,
@@ -11581,7 +11653,6 @@ class Button extends Component {
       padding: 0
     });
     this.alignText();
-    this.add(this.background);
     this.add(this.textNode);
     this.setupEventHandlers();
   }
@@ -11634,33 +11705,17 @@ class Button extends Component {
     this.fontColor = fontColor;
     this.textNode.fill(fontColor);
   }
-  setBackgroundColor(backgroundColor) {
-    this.backgroundColor = backgroundColor;
-    this.background.fill(backgroundColor);
-    this.updateButtonState();
-  }
   setHoverColor(hoverColor) {
     this.hoverColor = hoverColor;
     this.updateButtonState();
   }
   setActiveColor(activeColor) {
     this.activeColor = activeColor;
-  }
-  setCornerRadius(cornerRadius) {
-    this.cornerRadius = cornerRadius;
-  }
-  setBorderWidth(borderWidth) {
-    this.borderWidth = borderWidth;
-  }
-  setBorderColor(borderColor) {
-    this.borderColor = borderColor;
     this.updateButtonState();
   }
   setSize(size) {
     super.setSize(size);
     const { width, height } = size;
-    this.background.width(width);
-    this.background.height(height);
     this.textNode.width(width);
     this.textNode.height(height);
     this.alignText();
@@ -11671,6 +11726,284 @@ class Button extends Component {
     this.textNode.offsetY(this.textNode.height() / 2);
     this.textNode.x(this.width() / 2);
     this.textNode.y(this.height() / 2);
+  }
+}
+class Label2 extends Component {
+  constructor(options = {}) {
+    super(options);
+    this.text = "Label";
+    this.fontSize = 16;
+    this.fontFamily = "Arial";
+    this.fontStyle = "normal";
+    this.fontColor = "#000000";
+    this.fill = "#000000";
+    this.align = "left";
+    this.verticalAlign = "middle";
+    this.padding = 0;
+    this.ellipsis = false;
+    this.autoSize = false;
+    this.text = options.text || this.text;
+    this.fontSize = options.fontSize || this.fontSize;
+    this.fontFamily = options.fontFamily || this.fontFamily;
+    this.fontStyle = options.fontStyle || this.fontStyle;
+    this.fontColor = options.fontColor || this.fontColor;
+    this.fill = options.fill || this.fill;
+    this.align = options.align || this.align;
+    this.verticalAlign = options.verticalAlign || this.verticalAlign;
+    this.padding = options.padding || this.padding;
+    this.ellipsis = options.ellipsis || this.ellipsis;
+    this.autoSize = options.autoSize ?? this.autoSize;
+    this.init();
+  }
+  init() {
+    this.textNode = new Konva.Text({
+      text: this.text,
+      fontSize: this.fontSize,
+      fontFamily: this.fontFamily,
+      fontStyle: this.fontStyle,
+      fill: this.fill,
+      align: this.align,
+      verticalAlign: this.verticalAlign,
+      padding: this.padding,
+      width: this.width(),
+      height: this.height(),
+      listening: this.listening(),
+      ellipsis: this.ellipsis
+    });
+    this.add(this.textNode);
+    this.alignText();
+    if (this.autoSize) {
+      this.resizeToFitText();
+    }
+  }
+  alignText() {
+    this.textNode.offsetX(this.textNode.width() / 2);
+    this.textNode.offsetY(this.textNode.height() / 2);
+    this.textNode.x(this.width() / 2);
+    this.textNode.y(this.height() / 2);
+  }
+  setText(text) {
+    this.text = text;
+    this.textNode.text(text);
+    if (this.autoSize) {
+      this.resizeToFitText();
+    }
+  }
+  setFontSize(fontSize) {
+    this.fontSize = fontSize;
+    this.textNode.fontSize(fontSize);
+  }
+  setFontFamily(fontFamily) {
+    this.fontFamily = fontFamily;
+    this.textNode.fontFamily(fontFamily);
+  }
+  setFontStyle(fontStyle) {
+    this.fontStyle = fontStyle;
+    this.textNode.fontStyle(fontStyle);
+  }
+  setFontColor(fontColor) {
+    this.fontColor = fontColor;
+    this.textNode.fill(fontColor);
+  }
+  setFill(fill) {
+    this.fill = fill;
+    this.textNode.fill(fill);
+  }
+  setAlign(align) {
+    this.align = align;
+    this.textNode.align(align);
+  }
+  setVerticalAlign(verticalAlign) {
+    this.verticalAlign = verticalAlign;
+    this.textNode.verticalAlign(verticalAlign);
+  }
+  setPadding(padding) {
+    this.padding = padding;
+    this.textNode.padding(padding);
+  }
+  setEllipsis(ellipsis) {
+    this.ellipsis = ellipsis;
+    this.textNode.ellipsis(ellipsis);
+  }
+  setSize(size) {
+    super.setSize(size);
+    const { width, height } = size;
+    this.textNode.width(width);
+    this.textNode.height(height);
+    this.alignText();
+    return this;
+  }
+  getTextWidth() {
+    return this.textNode.width();
+  }
+  getTextHeight() {
+    return this.textNode.height();
+  }
+  resizeToFitText() {
+    const textSize = this.textNode.measureSize(this.textNode.text());
+    const textWidth = textSize.width;
+    const textHeight = textSize.height;
+    const width = textWidth + this.padding * 2;
+    const height = textHeight + this.padding * 2;
+    this.setSize({ width, height });
+    return this;
+  }
+}
+class ImageView extends Component {
+  constructor(options = {}) {
+    super(options);
+    this.objectFit = "contain";
+    this.imageObject = null;
+    this.imageLoaded = false;
+    this.image = options.image || this.image;
+    this.objectFit = options.objectFit || this.objectFit;
+    this.init();
+  }
+  init() {
+    this.imageNode = new Konva.Image({
+      image: void 0,
+      width: this.width(),
+      height: this.height(),
+      objectFit: this.objectFit
+    });
+    this.add(this.imageNode);
+    if (this.image) {
+      this.loadImage(this.image);
+    }
+  }
+  loadImage(source) {
+    if (source instanceof HTMLImageElement) {
+      this.imageObject = source;
+      if (source.complete && source.naturalWidth !== 0) {
+        this.imageLoaded = true;
+        this.updateImage();
+      } else {
+        source.onload = () => {
+          this.imageLoaded = true;
+          this.updateImage();
+        };
+      }
+      return;
+    }
+    this.imageObject = new Image();
+    this.imageObject.crossOrigin = "Anonymous";
+    this.imageObject.onload = () => {
+      this.imageLoaded = true;
+      this.updateImage();
+    };
+    this.imageObject.onerror = () => {
+      this.imageLoaded = false;
+      console.error("Failed to load image:", source);
+    };
+    this.imageObject.src = source;
+  }
+  updateImage() {
+    if (!this.imageObject) {
+      return;
+    }
+    if (this.imageLoaded) {
+      this.imageNode.image(this.imageObject);
+      this.fitImage();
+    } else {
+      this.imageNode.image(null);
+    }
+  }
+  fitImage() {
+    if (!this.imageObject || !this.imageLoaded) {
+      return;
+    }
+    const containerWidth = this.width();
+    const containerHeight = this.height();
+    const imageWidth = this.imageObject.naturalWidth;
+    const imageHeight = this.imageObject.naturalHeight;
+    const scaleX = containerWidth / imageWidth;
+    const scaleY = containerHeight / imageHeight;
+    let width = 0;
+    let height = 0;
+    let offsetX = 0;
+    let offsetY = 0;
+    switch (this.objectFit) {
+      case "contain":
+        const containScale = Math.min(scaleX, scaleY);
+        width = imageWidth * containScale;
+        height = imageHeight * containScale;
+        offsetX = (containerWidth - width) / 2;
+        offsetY = (containerHeight - height) / 2;
+        break;
+      case "cover":
+        const coverScale = Math.max(scaleX, scaleY);
+        width = imageWidth * coverScale;
+        height = imageHeight * coverScale;
+        offsetX = (containerWidth - width) / 2;
+        offsetY = (containerHeight - height) / 2;
+        break;
+      case "fill":
+        width = containerWidth;
+        height = containerHeight;
+        offsetX = 0;
+        offsetY = 0;
+        break;
+      case "none":
+        width = imageWidth;
+        height = imageHeight;
+        offsetX = imageWidth < containerWidth ? (containerWidth - imageWidth) / 2 : 0;
+        offsetY = imageHeight < containerHeight ? (containerHeight - imageHeight) / 2 : 0;
+        break;
+      case "scale-down":
+        if (imageWidth <= containerWidth && imageHeight <= containerHeight) {
+          width = imageWidth;
+          height = imageHeight;
+        } else {
+          const scaleDownScale = Math.min(scaleX, scaleY);
+          width = imageWidth * scaleDownScale;
+          height = imageHeight * scaleDownScale;
+        }
+        offsetX = (containerWidth - width) / 2;
+        offsetY = (containerHeight - height) / 2;
+        break;
+      default:
+        const defaultScale = Math.min(scaleX, scaleY);
+        width = imageWidth * defaultScale;
+        height = imageHeight * defaultScale;
+        offsetX = (containerWidth - width) / 2;
+        offsetY = (containerHeight - height) / 2;
+        break;
+    }
+    this.imageNode.width(width);
+    this.imageNode.height(height);
+    this.imageNode.x(offsetX);
+    this.imageNode.y(offsetY);
+    if (this.objectFit === "cover" || this.objectFit === "fill") {
+      this.imageNode.crop({
+        x: 0,
+        y: 0,
+        width: containerWidth,
+        height: containerHeight
+      });
+    } else {
+      this.imageNode.crop(void 0);
+    }
+  }
+  setImage(image) {
+    this.imageLoaded = false;
+    this.loadImage(image);
+  }
+  setObjectFit(objectFit) {
+    this.objectFit = objectFit;
+    this.fitImage();
+  }
+  getImageWidth() {
+    var _a;
+    return ((_a = this.imageObject) == null ? void 0 : _a.naturalWidth) || 0;
+  }
+  getImageHeight() {
+    var _a;
+    return ((_a = this.imageObject) == null ? void 0 : _a.naturalHeight) || 0;
+  }
+  setSize(size) {
+    super.setSize(size);
+    this.fitImage();
+    return this;
   }
 }
 function createStageAndLayer(containerId) {
@@ -11696,9 +12029,9 @@ function setupButtonDemo() {
     height: 40,
     text: "Click Me",
     backgroundColor: "#3498db",
+    backgroundCornerRadius: 6,
     hoverColor: "#2980b9",
-    activeColor: "#1c638d",
-    cornerRadius: 6
+    activeColor: "#1c638d"
   });
   basicButton.on("click", () => {
     console.log("Basic button clicked!");
@@ -11710,9 +12043,9 @@ function setupButtonDemo() {
     height: 40,
     text: "Rounded",
     backgroundColor: "#e74c3c",
+    backgroundCornerRadius: 20,
     hoverColor: "#c0392b",
     activeColor: "#922b21",
-    cornerRadius: 20,
     fontColor: "#ffffff"
   });
   const borderedButton = new Button({
@@ -11722,11 +12055,11 @@ function setupButtonDemo() {
     height: 40,
     text: "Bordered",
     backgroundColor: "#ffffff",
+    backgroundCornerRadius: 4,
+    backgroundBorderWidth: 2,
+    backgroundBorderColor: "#2ecc71",
     hoverColor: "#f8f9fa",
     activeColor: "#e9ecef",
-    cornerRadius: 4,
-    borderWidth: 2,
-    borderColor: "#2ecc71",
     fontColor: "#2ecc71"
   });
   const largeButton = new Button({
@@ -11736,9 +12069,9 @@ function setupButtonDemo() {
     height: 60,
     text: "Large Button",
     backgroundColor: "#9b59b6",
+    backgroundCornerRadius: 8,
     hoverColor: "#8e44ad",
     activeColor: "#6c3483",
-    cornerRadius: 8,
     fontColor: "#ffffff",
     fontSize: 20
   });
@@ -11749,9 +12082,9 @@ function setupButtonDemo() {
     height: 40,
     text: "Custom Font",
     backgroundColor: "#f1c40f",
+    backgroundCornerRadius: 0,
     hoverColor: "#f39c12",
     activeColor: "#d68910",
-    cornerRadius: 0,
     fontColor: "#2c3e50",
     fontFamily: "Arial",
     fontSize: 16,
@@ -11773,8 +12106,237 @@ function setupButtonDemo() {
   });
   return { stage, layer, buttons: [basicButton, roundedButton, borderedButton, largeButton, textButton] };
 }
+function setupLabelDemo() {
+  const { stage, layer } = createStageAndLayer("label-demo");
+  const basicLabel = new Label2({
+    x: 50,
+    y: 50,
+    width: 200,
+    height: 40,
+    text: "Basic Label",
+    fontSize: 16,
+    fill: "#333333"
+  });
+  const bgLabel = new Label2({
+    x: 50,
+    y: 100,
+    width: 200,
+    height: 40,
+    text: "Label with Background",
+    fontSize: 16,
+    fill: "#ffffff",
+    backgroundColor: "#3498db",
+    backgroundCornerRadius: 4,
+    padding: 5,
+    align: "center",
+    verticalAlign: "middle"
+  });
+  const styledLabel = new Label2({
+    x: 50,
+    y: 150,
+    width: 200,
+    height: 40,
+    text: "Styled Bold Label",
+    fontSize: 18,
+    fontStyle: "bold",
+    fill: "#e74c3c",
+    padding: 5
+  });
+  const ellipsisLabel = new Label2({
+    x: 50,
+    y: 200,
+    width: 200,
+    height: 40,
+    text: "This is a very long text that will be truncated with ellipsis because it does not fit within the width",
+    fontSize: 14,
+    fill: "#333333",
+    ellipsis: true,
+    padding: 5,
+    backgroundColor: "#f8f9fa",
+    backgroundCornerRadius: 4
+  });
+  const rightAlignedLabel = new Label2({
+    x: 300,
+    y: 50,
+    width: 200,
+    height: 40,
+    text: "Right Aligned",
+    fontSize: 16,
+    fill: "#333333",
+    align: "right",
+    padding: 5,
+    backgroundColor: "#f1c40f",
+    backgroundCornerRadius: 4
+  });
+  const centeredLabel = new Label2({
+    x: 300,
+    y: 100,
+    width: 200,
+    height: 40,
+    text: "Centered Label",
+    fontSize: 16,
+    fill: "#333333",
+    align: "center",
+    verticalAlign: "middle",
+    padding: 5,
+    backgroundColor: "#2ecc71",
+    backgroundCornerRadius: 20
+  });
+  const autoSizedLabel = new Label2({
+    x: 300,
+    y: 150,
+    width: 10,
+    // Small initial width
+    height: 10,
+    // Small initial height
+    text: "Auto-sized Label",
+    fontSize: 16,
+    fill: "#333333",
+    padding: 10,
+    backgroundColor: "#9b59b6",
+    backgroundCornerRadius: 4
+  });
+  autoSizedLabel.resizeToFitText();
+  const sectionLabel = new Label2({
+    x: 300,
+    y: 200,
+    width: 200,
+    height: 40,
+    text: "Label Component Demo",
+    fontSize: 20,
+    fontStyle: "bold",
+    fill: "#34495e",
+    align: "center",
+    padding: 5,
+    backgroundColor: "#ecf0f1",
+    backgroundCornerRadius: 4
+  });
+  const labels = [
+    basicLabel,
+    bgLabel,
+    styledLabel,
+    ellipsisLabel,
+    rightAlignedLabel,
+    centeredLabel,
+    autoSizedLabel,
+    sectionLabel
+  ];
+  labels.forEach((label) => layer.add(label));
+  layer.draw();
+  window.addEventListener("resize", () => {
+    const container = document.getElementById("label-demo");
+    if (container) {
+      stage.width(container.offsetWidth);
+      stage.height(container.offsetHeight);
+      layer.draw();
+    }
+  });
+  return { stage, layer, labels };
+}
+function setupImageViewDemo() {
+  const { stage, layer } = createStageAndLayer("imageview-demo");
+  const imageContain = new ImageView({
+    x: 50,
+    y: 50,
+    width: 150,
+    height: 150,
+    image: "https://konvajs.org/assets/lion.png",
+    backgroundColor: "#f0f0f0",
+    backgroundOpacity: 1,
+    backgroundCornerRadius: 6,
+    objectFit: "contain"
+  });
+  const imageCover = new ImageView({
+    x: 250,
+    y: 50,
+    width: 150,
+    height: 150,
+    image: "https://konvajs.org/assets/lion.png",
+    backgroundColor: "#f0f0f0",
+    backgroundOpacity: 1,
+    backgroundCornerRadius: 0,
+    objectFit: "cover"
+  });
+  const imageFill = new ImageView({
+    x: 450,
+    y: 50,
+    width: 150,
+    height: 150,
+    image: "https://konvajs.org/assets/lion.png",
+    backgroundColor: "#f0f0f0",
+    backgroundOpacity: 1,
+    backgroundCornerRadius: 6,
+    objectFit: "fill"
+  });
+  const imageScaleDown = new ImageView({
+    x: 650,
+    y: 50,
+    width: 150,
+    height: 150,
+    image: "https://konvajs.org/assets/lion.png",
+    backgroundColor: "#f0f0f0",
+    backgroundOpacity: 1,
+    backgroundCornerRadius: 6,
+    objectFit: "scale-down"
+  });
+  const imageWithShadow = new ImageView({
+    x: 50,
+    y: 250,
+    width: 150,
+    height: 150,
+    image: "https://konvajs.org/assets/lion.png",
+    backgroundColor: "#ffffff",
+    backgroundBorderWidth: 2,
+    backgroundBorderColor: "#3498db",
+    backgroundCornerRadius: 8,
+    shadowEnabled: true,
+    shadowColor: "rgba(0,0,0,0.3)",
+    shadowBlur: 10,
+    shadowOffsetX: 5,
+    shadowOffsetY: 5,
+    objectFit: "contain"
+  });
+  function createLabel(text, x, y) {
+    const label = new Konva.Text({
+      x,
+      y,
+      text,
+      fontSize: 14,
+      fontFamily: "Arial",
+      fill: "#333333"
+    });
+    return label;
+  }
+  const containLabel = createLabel('objectFit: "contain"', 50, 210);
+  const coverLabel = createLabel('objectFit: "cover"', 250, 210);
+  const fillLabel = createLabel('objectFit: "fill"', 450, 210);
+  const scaleDownLabel = createLabel('objectFit: "scale-down"', 650, 210);
+  const shadowLabel = createLabel("with border & shadow", 50, 410);
+  layer.add(imageContain);
+  layer.add(imageCover);
+  layer.add(imageFill);
+  layer.add(imageScaleDown);
+  layer.add(imageWithShadow);
+  layer.add(containLabel);
+  layer.add(coverLabel);
+  layer.add(fillLabel);
+  layer.add(scaleDownLabel);
+  layer.add(shadowLabel);
+  layer.draw();
+  window.addEventListener("resize", () => {
+    const container = document.getElementById("imageview-demo");
+    if (container) {
+      stage.width(container.offsetWidth);
+      stage.height(container.offsetHeight);
+      layer.draw();
+    }
+  });
+  return { stage, layer, images: [imageContain, imageCover, imageFill, imageScaleDown, imageWithShadow] };
+}
 document.addEventListener("DOMContentLoaded", () => {
   setupButtonDemo();
+  setupLabelDemo();
+  setupImageViewDemo();
 });</script>
 </head>
 <body>
@@ -11800,6 +12362,47 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="component-demo">
                 <div id="button-demo"></div>
+            </div>
+        </div>
+
+        <div class="component-section">
+            <div class="component-header">Label Component (TypeScript)</div>
+            <div class="component-description">
+                <p>Component hiển thị văn bản với nhiều tùy chọn về căn chỉnh, phông chữ, màu nền và bo góc.</p>
+                <div class="code-example">
+                    const label = new Label({<br>
+                    &nbsp;&nbsp;width: 200,<br>
+                    &nbsp;&nbsp;height: 40,<br>
+                    &nbsp;&nbsp;text: 'Label Text',<br>
+                    &nbsp;&nbsp;fontSize: 16,<br>
+                    &nbsp;&nbsp;backgroundColor: '#f8f9fa',<br>
+                    &nbsp;&nbsp;cornerRadius: 4,<br>
+                    &nbsp;&nbsp;padding: 5<br>
+                    });
+                </div>
+            </div>
+            <div class="component-demo">
+                <div id="label-demo"></div>
+            </div>
+        </div>
+
+        <div class="component-section">
+            <div class="component-header">ImageView Component (TypeScript)</div>
+            <div class="component-description">
+                <p>Hiển thị hình ảnh với nhiều chế độ hiển thị (contain, cover, fill, scale-down), hỗ trợ background, border và shadow.</p>
+                <div class="code-example">
+                    const imageView = new ImageView({<br>
+                    &nbsp;&nbsp;width: 200,<br>
+                    &nbsp;&nbsp;height: 150,<br>
+                    &nbsp;&nbsp;image: 'path/to/image.jpg',<br>
+                    &nbsp;&nbsp;backgroundColor: '#f0f0f0',<br>
+                    &nbsp;&nbsp;objectFit: 'contain',<br>
+                    &nbsp;&nbsp;borderRadius: 6<br>
+                    });
+                </div>
+            </div>
+            <div class="component-demo" style="height: 450px;">
+                <div id="imageview-demo"></div>
             </div>
         </div>
     </div>

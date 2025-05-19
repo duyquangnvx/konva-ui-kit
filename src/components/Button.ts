@@ -7,12 +7,8 @@ export type ButtonOptions = ComponentOptions & {
     fontFamily?: string;
     fontStyle?: string;
     fontColor?: string;
-    backgroundColor?: string;
     hoverColor?: string;
     activeColor?: string;
-    cornerRadius?: number;
-    borderWidth?: number;
-    borderColor?: string;
 }
 
 export class Button extends Component<ButtonOptions> {
@@ -21,17 +17,12 @@ export class Button extends Component<ButtonOptions> {
     private fontFamily: string = 'Arial';
     private fontStyle: string = 'normal';
     private fontColor: string = '#000000';
-    private backgroundColor: string = '#3498db';
     private hoverColor: string = '#2980b9';
     private activeColor: string = '#1c638d';
-    private cornerRadius: number = 4;
-    private borderWidth: number = 0;
-    private borderColor: string = '#000000';
 
     private isHovered: boolean = false;
     private isActive: boolean = false;
 
-    private background!: Konva.Rect;
     private textNode!: Konva.Text;
 
     constructor(options: ButtonOptions = {} as ButtonOptions) {
@@ -43,29 +34,14 @@ export class Button extends Component<ButtonOptions> {
         this.fontFamily = options.fontFamily || this.fontFamily;
         this.fontStyle = options.fontStyle || this.fontStyle;
         this.fontColor = options.fontColor || this.fontColor;
-        this.backgroundColor = options.backgroundColor || this.backgroundColor;
         this.hoverColor = options.hoverColor || this.hoverColor;
         this.activeColor = options.activeColor || this.activeColor;
-        this.cornerRadius = options.cornerRadius || this.cornerRadius;
-        this.borderWidth = options.borderWidth || this.borderWidth;
-        this.borderColor = options.borderColor || this.borderColor;
 
         // Initialize
         this.init();
     }
 
     private init() {
-
-        // Create background rect
-        this.background = new Konva.Rect({
-            width: this.width(),
-            height: this.height(),
-            fill: this.backgroundColor,
-            cornerRadius: this.cornerRadius,
-            stroke: this.borderColor,
-            strokeWidth: this.borderWidth,
-        });
-
         // Create text node
         this.textNode = new Konva.Text({
             text: this.text,
@@ -82,8 +58,6 @@ export class Button extends Component<ButtonOptions> {
 
         this.alignText();
 
-        // Add nodes to group
-        this.add(this.background);
         this.add(this.textNode);
 
         this.setupEventHandlers();
@@ -149,13 +123,6 @@ export class Button extends Component<ButtonOptions> {
         this.textNode.fill(fontColor);
     }
 
-    setBackgroundColor(backgroundColor: string) {
-        this.backgroundColor = backgroundColor;
-        this.background.fill(backgroundColor);
-
-        this.updateButtonState();
-    }
-
     setHoverColor(hoverColor: string) {
         this.hoverColor = hoverColor;
 
@@ -164,18 +131,6 @@ export class Button extends Component<ButtonOptions> {
     
     setActiveColor(activeColor: string) {
         this.activeColor = activeColor;
-    }
-
-    setCornerRadius(cornerRadius: number) {
-        this.cornerRadius = cornerRadius;
-    }
-
-    setBorderWidth(borderWidth: number) {
-        this.borderWidth = borderWidth;
-    }
-
-    setBorderColor(borderColor: string) {
-        this.borderColor = borderColor;
 
         this.updateButtonState();
     }
@@ -184,8 +139,6 @@ export class Button extends Component<ButtonOptions> {
         super.setSize(size);
 
         const { width, height } = size;
-        this.background.width(width);
-        this.background.height(height);
 
         this.textNode.width(width);
         this.textNode.height(height);

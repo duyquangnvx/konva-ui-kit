@@ -3,6 +3,7 @@ import Konva from 'konva';
 import { Button } from './src/components/Button';
 import { Label } from './src/components/Label';
 import { ImageView } from './src/components/ImageView';
+import { ScrollView } from './src/components/ScrollView';
 
 // Khởi tạo stage và layer cho demo container
 function createStageAndLayer(containerId: string) {
@@ -404,10 +405,161 @@ function setupImageViewDemo() {
     return { stage, layer, images: [imageContain, imageCover, imageFill, imageScaleDown, imageWithShadow] };
 }
 
+// ===== ScrollView Demo =====
+function setupScrollViewDemo() {
+    const { stage, layer } = createStageAndLayer('scrollview-demo');
+    
+    // Create ScrollView
+    const scrollView = new ScrollView({
+        x: 50,
+        y: 30,
+        width: 300,
+        height: 250,
+        backgroundColor: '#f9f9f9',
+        scrollbarColor: '#3498db',
+        scrollbarWidth: 8,
+        scrollbarHeight: 8,
+        scrollbarCornerRadius: 4,
+        scrollDirection: 'both',
+        inertiaEnabled: true,
+        bounceEnabled: true
+    });
+    
+    // Create title label
+    const titleLabel = new Label({
+        x: 50,
+        y: 5,
+        width: 300,
+        height: 20,
+        text: 'ScrollView (di chuyển chuột hoặc kéo để cuộn)',
+        fontSize: 14,
+        fontFamily: 'Arial',
+        fill: '#333333',
+        align: 'center'
+    });
+    
+    // Grid configuration
+    const blockSize = 100;
+    const padding = 10;
+    const rows = 7;
+    const cols = 5;
+    
+    // Calculate exact content dimensions
+    const contentWidth = cols * blockSize + (cols - 1) * padding;
+    const contentHeight = rows * blockSize + (rows - 1) * padding;
+    
+    // Set content size
+    scrollView.setContentSize(contentWidth, contentHeight);
+    
+    // Create a grid of colored blocks within the ScrollView
+    const colors = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
+        '#1abc9c', '#d35400', '#34495e', '#27ae60', '#e67e22',
+        '#16a085', '#f1c40f', '#2980b9', '#c0392b', '#8e44ad'
+    ];
+    
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const colorIndex = (row * cols + col) % colors.length;
+            const x = col * (blockSize + padding);
+            const y = row * (blockSize + padding);
+            
+            // Create content item
+            const block = new Konva.Group({
+                x: x,
+                y: y
+            });
+            
+            // Create background rect
+            const rect = new Konva.Rect({
+                width: blockSize,
+                height: blockSize,
+                fill: colors[colorIndex],
+                cornerRadius: 8,
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowBlur: 5,
+                shadowOffset: { x: 2, y: 2 }
+            });
+            
+            // Create label for the block
+            const blockLabel = new Konva.Text({
+                x: 10,
+                y: blockSize / 2 - 10,
+                width: blockSize - 20,
+                text: `Item ${row * cols + col + 1}`,
+                fontSize: 14,
+                fontFamily: 'Arial',
+                fill: 'white',
+                align: 'center'
+            });
+            
+            // Add to group
+            block.add(rect);
+            block.add(blockLabel);
+            
+            // Make blocks interactive
+            block.on('mouseenter', function() {
+                rect.fill(darkenColor(colors[colorIndex], 0.2));
+                stage.container().style.cursor = 'pointer';
+                layer.draw();
+            });
+            
+            block.on('mouseleave', function() {
+                rect.fill(colors[colorIndex]);
+                stage.container().style.cursor = 'default';
+                layer.draw();
+            });
+            
+            block.on('click', function() {
+                alert(`Clicked on Item ${row * cols + col + 1}`);
+            });
+            
+            // Add the block to the ScrollView's content container
+            scrollView.addChild(block);
+        }
+    }
+    
+    // Utility function to darken a color
+    function darkenColor(hex: string, percent: number): string {
+        // Convert hex to RGB
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+        
+        // Darken
+        r = Math.max(0, Math.floor(r * (1 - percent)));
+        g = Math.max(0, Math.floor(g * (1 - percent)));
+        b = Math.max(0, Math.floor(b * (1 - percent)));
+        
+        // Convert back to hex
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
+    // Add ScrollView and title to the layer
+    layer.add(titleLabel);
+    layer.add(scrollView);
+    
+    // Draw layer
+    layer.draw();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('scrollview-demo');
+        if (container) {
+            stage.width(container.offsetWidth);
+            stage.height(container.offsetHeight);
+            layer.draw();
+        }
+    });
+    
+    return { stage, layer, scrollView };
+}
+
 // Kiểm tra các container DOM và khởi tạo demos
 document.addEventListener('DOMContentLoaded', () => {
     // Khởi tạo demos
     setupButtonDemo();
     setupLabelDemo();
     setupImageViewDemo();
+    setupScrollViewDemo();
 });

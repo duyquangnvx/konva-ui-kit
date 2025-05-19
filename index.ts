@@ -2,6 +2,7 @@
 import Konva from 'konva';
 import { Button } from './src/components/Button';
 import { Label } from './src/components/Label';
+import { ImageView } from './src/components/ImageView';
 
 // Khởi tạo stage và layer cho demo container
 function createStageAndLayer(containerId: string) {
@@ -279,9 +280,133 @@ function setupLabelDemo() {
     return { stage, layer, labels };
 }
 
+// ===== ImageView Demo =====
+function setupImageViewDemo() {
+    const { stage, layer } = createStageAndLayer('imageview-demo');
+    
+    // Tạo các ImageView với các chế độ khác nhau
+    
+    // Image với chế độ contain
+    const imageContain = new ImageView({
+        x: 50,
+        y: 50,
+        width: 150,
+        height: 150,
+        image: 'https://konvajs.org/assets/lion.png',
+        backgroundColor: '#f0f0f0',
+        backgroundAlpha: 1,
+        objectFit: 'contain',
+        borderRadius: 6
+    });
+    
+    // Image với chế độ cover
+    const imageCover = new ImageView({
+        x: 250,
+        y: 50,
+        width: 150,
+        height: 150,
+        image: 'https://konvajs.org/assets/lion.png',
+        backgroundColor: '#f0f0f0',
+        backgroundAlpha: 1,
+        objectFit: 'cover',
+        borderRadius: 0
+    });
+    
+    // Image với chế độ fill
+    const imageFill = new ImageView({
+        x: 450,
+        y: 50,
+        width: 150,
+        height: 150,
+        image: 'https://konvajs.org/assets/lion.png',
+        backgroundColor: '#f0f0f0',
+        backgroundAlpha: 1,
+        objectFit: 'fill',
+        borderRadius: 0
+    });
+    
+    // Image với chế độ scale-down
+    const imageScaleDown = new ImageView({
+        x: 650,
+        y: 50,
+        width: 150,
+        height: 150,
+        image: 'https://konvajs.org/assets/lion.png',
+        backgroundColor: '#f0f0f0',
+        backgroundAlpha: 1,
+        objectFit: 'scale-down',
+        borderRadius: 6
+    });
+    
+    // Image có border và shadow
+    const imageWithShadow = new ImageView({
+        x: 50,
+        y: 250,
+        width: 150,
+        height: 150,
+        image: 'https://konvajs.org/assets/lion.png',
+        backgroundColor: '#ffffff',
+        borderWidth: 2,
+        borderColor: '#3498db',
+        borderRadius: 8,
+        shadowColor: 'rgba(0,0,0,0.3)',
+        shadowBlur: 10,
+        shadowOffsetX: 5,
+        shadowOffsetY: 5,
+        objectFit: 'contain'
+    });
+    
+    // Tạo các labels
+    function createLabel(text: string, x: number, y: number) {
+        const label = new Konva.Text({
+            x: x,
+            y: y,
+            text: text,
+            fontSize: 14,
+            fontFamily: 'Arial',
+            fill: '#333333'
+        });
+        return label;
+    }
+    
+    const containLabel = createLabel('objectFit: "contain"', 50, 210);
+    const coverLabel = createLabel('objectFit: "cover"', 250, 210);
+    const fillLabel = createLabel('objectFit: "fill"', 450, 210);
+    const scaleDownLabel = createLabel('objectFit: "scale-down"', 650, 210);
+    const shadowLabel = createLabel('with border & shadow', 50, 410);
+    
+    // Add to layer
+    layer.add(imageContain);
+    layer.add(imageCover);
+    layer.add(imageFill);
+    layer.add(imageScaleDown);
+    layer.add(imageWithShadow);
+    
+    layer.add(containLabel);
+    layer.add(coverLabel);
+    layer.add(fillLabel);
+    layer.add(scaleDownLabel);
+    layer.add(shadowLabel);
+    
+    layer.draw();
+    
+    // Add event listeners for window resize
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('imageview-demo');
+        if (container) {
+            stage.width(container.offsetWidth);
+            stage.height(container.offsetHeight);
+            layer.draw();
+        }
+    });
+    
+    return { stage, layer, images: [imageContain, imageCover, imageFill, imageScaleDown, imageWithShadow] };
+}
+
 // Kiểm tra các container DOM và khởi tạo demos
 document.addEventListener('DOMContentLoaded', () => {
     // Khởi tạo demos
     setupButtonDemo();
     setupLabelDemo();
+    setupImageViewDemo();
 });

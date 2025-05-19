@@ -4,6 +4,7 @@ import { Button } from './src/components/Button';
 import { Label } from './src/components/Label';
 import { ImageView } from './src/components/ImageView';
 import { ScrollView } from './src/components/ScrollView';
+import { ListView } from './src/components/ListView';
 
 // Khởi tạo stage và layer cho demo container
 function createStageAndLayer(containerId: string) {
@@ -555,6 +556,201 @@ function setupScrollViewDemo() {
     return { stage, layer, scrollView };
 }
 
+// ===== ListView Demo =====
+function setupListViewDemo() {
+    const { stage, layer } = createStageAndLayer('listview-demo');
+    
+    // Create title label
+    const titleLabel = new Label({
+        x: 50,
+        y: 5,
+        width: 300,
+        height: 20,
+        text: 'ListView Demo',
+        fontSize: 14,
+        fontFamily: 'Arial',
+        fill: '#333333',
+        align: 'center'
+    });
+    
+    // Create sample data
+    const listItems = [
+        { title: 'Item 1', description: 'Description for item 1', color: '#3498db' },
+        { title: 'Item 2', description: 'Description for item 2', color: '#e74c3c' },
+        { title: 'Item 3', description: 'Description for item 3', color: '#2ecc71' },
+        { title: 'Item 4', description: 'Description for item 4', color: '#f39c12' },
+        { title: 'Item 5', description: 'Description for item 5', color: '#9b59b6' },
+        { title: 'Item 6', description: 'Description for item 6', color: '#1abc9c' },
+        { title: 'Item 7', description: 'Description for item 7', color: '#d35400' },
+        { title: 'Item 8', description: 'Description for item 8', color: '#34495e' },
+    ];
+    
+    // Create ListView with vertical layout
+    const verticalListView = new ListView({
+        x: 50,
+        y: 30,
+        width: 300,
+        height: 250,
+        backgroundColor: '#f9f9f9',
+        scrollbarColor: '#3498db',
+        scrollbarWidth: 8,
+        scrollbarHeight: 8,
+        scrollbarCornerRadius: 4,
+        itemSpacing: 10,
+        items: listItems,
+        renderItem: (item, index) => {
+            // Create item container
+            const itemGroup = new Konva.Group({
+                width: 300,
+                height: 70
+            });
+            
+            // Create background
+            const background = new Konva.Rect({
+                width: 300,
+                height: 70,
+                fill: '#ffffff',
+                cornerRadius: 8,
+                shadowColor: 'rgba(0,0,0,0.1)',
+                shadowBlur: 5,
+                shadowOffset: { x: 0, y: 2 }
+            });
+            
+            // Create color indicator
+            const colorIndicator = new Konva.Rect({
+                x: 0,
+                y: 0,
+                width: 10,
+                height: 70,
+                fill: item.color,
+                cornerRadius: [8, 0, 0, 8]
+            });
+            
+            // Create title
+            const title = new Konva.Text({
+                x: 20,
+                y: 15,
+                text: item.title,
+                fontSize: 16,
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                fill: '#333333',
+                width: 260
+            });
+            
+            // Create description
+            const description = new Konva.Text({
+                x: 20,
+                y: 40,
+                text: item.description,
+                fontSize: 12,
+                fontFamily: 'Arial',
+                fill: '#777777',
+                width: 260
+            });
+            
+            // Add elements to the group
+            itemGroup.add(background);
+            itemGroup.add(colorIndicator);
+            itemGroup.add(title);
+            itemGroup.add(description);
+            
+            return itemGroup;
+        },
+        onItemClick: (item, index) => {
+            console.log(`Clicked on ${item.title} at index ${index}`);
+            alert(`Clicked on ${item.title}`);
+        }
+    });
+    
+    // Create horizontal ListView
+    const horizontalListView = new ListView({
+        x: 50,
+        y: 300,
+        width: 500,
+        height: 120,
+        backgroundColor: '#f9f9f9',
+        scrollbarColor: '#3498db',
+        scrollbarWidth: 8,
+        scrollbarHeight: 8,
+        scrollbarCornerRadius: 4,
+        itemSpacing: 10,
+        horizontal: true,
+        items: listItems.slice(0, 6),
+        renderItem: (item, index) => {
+            // Create item container
+            const itemGroup = new Konva.Group({
+                width: 100,
+                height: 100
+            });
+            
+            // Create background
+            const background = new Konva.Rect({
+                width: 100,
+                height: 100,
+                fill: item.color,
+                cornerRadius: 8,
+                opacity: 0.8
+            });
+            
+            // Create title
+            const title = new Konva.Text({
+                x: 10,
+                y: 40,
+                text: item.title,
+                fontSize: 14,
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                fill: '#ffffff',
+                width: 80,
+                align: 'center'
+            });
+            
+            // Add elements to the group
+            itemGroup.add(background);
+            itemGroup.add(title);
+            
+            return itemGroup;
+        },
+        onItemClick: (item, index) => {
+            console.log(`Clicked on horizontal item ${item.title} at index ${index}`);
+        }
+    });
+    
+    // Create a horizontal list label
+    const horizontalListLabel = new Label({
+        x: 50,
+        y: 280,
+        width: 200,
+        height: 15,
+        text: 'Horizontal ListView',
+        fontSize: 12,
+        fontFamily: 'Arial',
+        fill: '#333333'
+    });
+    
+    // Add ListView and title to the layer
+    layer.add(titleLabel);
+    layer.add(verticalListView);
+    layer.add(horizontalListLabel);
+    layer.add(horizontalListView);
+    
+    // Draw layer
+    layer.draw();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('listview-demo');
+        if (container) {
+            stage.width(container.offsetWidth);
+            stage.height(container.offsetHeight);
+            layer.draw();
+        }
+    });
+    
+    return { stage, layer, verticalListView, horizontalListView };
+}
+
 // Kiểm tra các container DOM và khởi tạo demos
 document.addEventListener('DOMContentLoaded', () => {
     // Khởi tạo demos
@@ -562,4 +758,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLabelDemo();
     setupImageViewDemo();
     setupScrollViewDemo();
+    setupListViewDemo();
 });

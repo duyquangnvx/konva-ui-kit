@@ -9,6 +9,10 @@ export type ButtonOptions = ComponentOptions & {
     fontColor?: string;
     hoverColor?: string;
     activeColor?: string;
+    hoverActionEnabled?: boolean;
+    hoverZoomScale?: number;
+    textAlign?: string;
+    textVerticalAlign?: string;
 }
 
 export class Button extends Component<ButtonOptions> {
@@ -19,11 +23,17 @@ export class Button extends Component<ButtonOptions> {
     private fontColor: string = '#000000';
     private hoverColor: string = '#2980b9';
     private activeColor: string = '#1c638d';
+    private hoverActionEnabled: boolean = false;
+    private hoverZoomScale: number = 0.05;
+    private textAlign: string = 'center';
+    private textVerticalAlign: string = 'middle';
 
     private isHovered: boolean = false;
     private isActive: boolean = false;
+    private originalScale: { x: number, y: number } = { x: 1, y: 1 };
 
     private textNode!: Konva.Text;
+    private readonly RECT_WIDTH_RATIO: number = 0.92;
 
     constructor(options: ButtonOptions = {} as ButtonOptions) {
         super(options);
@@ -36,6 +46,13 @@ export class Button extends Component<ButtonOptions> {
         this.fontColor = options.fontColor || this.fontColor;
         this.hoverColor = options.hoverColor || this.hoverColor;
         this.activeColor = options.activeColor || this.activeColor;
+        this.hoverActionEnabled = options.hoverActionEnabled !== undefined ? options.hoverActionEnabled : this.hoverActionEnabled;
+        this.hoverZoomScale = options.hoverZoomScale !== undefined ? options.hoverZoomScale : this.hoverZoomScale;
+        this.textAlign = options.textAlign || this.textAlign;
+        this.textVerticalAlign = options.textVerticalAlign || this.textVerticalAlign;
+
+        // Store original scale
+        this.saveOriginalScale();
 
         // Initialize
         this.init();
@@ -49,14 +66,17 @@ export class Button extends Component<ButtonOptions> {
             fontFamily: this.fontFamily,
             fontStyle: this.fontStyle,
             fill: this.fontColor,
-            align: 'center',
-            verticalAlign: 'middle',
-            width: this.width(),
+            align: this.textAlign,
+            verticalAlign: this.textVerticalAlign,
+            width: this.width() * this.RECT_WIDTH_RATIO,
             height: this.height(),
             padding: 0,
         });
 
         this.alignText();
+
+        // Set offset to center for scaling from center
+        this.setOffsetFromCenter();
 
         this.add(this.textNode);
 
@@ -69,12 +89,20 @@ export class Button extends Component<ButtonOptions> {
         this.on('mouseenter', () => {
             this.isHovered = true;
             this.updateButtonState();
+            
+            if (this.hoverActionEnabled) {
+                this.applyHoverScale(true);
+            }
         });
 
         this.on('mouseleave', () => {
             this.isHovered = false;
             this.isActive = false;
             this.updateButtonState();
+            
+            if (this.hoverActionEnabled) {
+                this.applyHoverScale(false);
+            }
         });
 
         this.on('mousedown touchstart', () => {
@@ -95,6 +123,31 @@ export class Button extends Component<ButtonOptions> {
             this.background.fill(this.hoverColor);
         } else {
             this.background.fill(this.backgroundColor);
+        }
+    }
+
+    private saveOriginalScale() {
+        this.originalScale = {
+            x: this.scaleX(),
+            y: this.scaleY()
+        };
+    }
+
+    private applyHoverScale(hovered: boolean) {
+        if (hovered) {
+            this.to({
+                scaleX: this.originalScale.x * (1 + this.hoverZoomScale),
+                scaleY: this.originalScale.y * (1 + this.hoverZoomScale),
+                duration: 0.1,
+                easing: Konva.Easings.EaseOut
+            });
+        } else {
+            this.to({
+                scaleX: this.originalScale.x,
+                scaleY: this.originalScale.y,
+                duration: 0.1,
+                easing: Konva.Easings.EaseIn
+            });
         }
     }
 
@@ -123,6 +176,16 @@ export class Button extends Component<ButtonOptions> {
         this.textNode.fill(fontColor);
     }
 
+    setTextAlign(textAlign: string) {
+        this.textAlign = textAlign;
+        this.textNode.align(textAlign);
+    }
+
+    setTextVerticalAlign(textVerticalAlign: string) {
+        this.textVerticalAlign = textVerticalAlign;
+        this.textNode.verticalAlign(textVerticalAlign);
+    }
+
     setHoverColor(hoverColor: string) {
         this.hoverColor = hoverColor;
 
@@ -135,7 +198,20 @@ export class Button extends Component<ButtonOptions> {
         this.updateButtonState();
     }
 
+    setHoverActionEnabled(enabled: boolean) {
+        this.hoverActionEnabled = enabled;
+    }
+
+    setHoverZoomScale(scale: number) {
+        this.hoverZoomScale = scale;
+    }
+
     setSize(size: { width: number, height: number }): this {
+        // Get current position before updating size
+        const pos = this.position();
+        const oldOffset = this.offset();
+        
+        // Update size in parent
         super.setSize(size);
 
         const { width, height } = size;
@@ -144,6 +220,21 @@ export class Button extends Component<ButtonOptions> {
         this.textNode.height(height);
 
         this.alignText();
+        
+        // Update offset to new center
+        this.offset({
+            x: width / 2,
+            y: height / 2
+        });
+        
+        // Adjust position to keep the button in the same visual place
+        // after changing the offset
+        if (oldOffset.x !== 0 || oldOffset.y !== 0) {
+            this.position({
+                x: pos.x - oldOffset.x + width / 2,
+                y: pos.y - oldOffset.y + height / 2
+            });
+        }
 
         return this;
     }
@@ -153,6 +244,21 @@ export class Button extends Component<ButtonOptions> {
         this.textNode.offsetY(this.textNode.height() / 2);
         this.textNode.x(this.width() / 2);
         this.textNode.y(this.height() / 2);
+    }
+
+    private setOffsetFromCenter() {
+        // Set the offset to half of width and height to scale from center
+        this.offset({
+            x: this.width() / 2,
+            y: this.height() / 2
+        });
+        
+        // Adjust position to compensate for offset
+        const pos = this.position();
+        this.position({
+            x: pos.x + this.width() / 2,
+            y: pos.y + this.height() / 2
+        });
     }
 }
 

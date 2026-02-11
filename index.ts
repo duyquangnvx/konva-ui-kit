@@ -108,12 +108,77 @@ function setupButtonDemo() {
         fontStyle: 'bold'
     });
     
+    // Gradient button
+    const gradientButton = new Button({
+        x: 250,
+        y: 190, // Adjusted y position
+        width: 200,
+        height: 40,
+        text: 'Gradient Button',
+        backgroundGradientEnabled: true,
+        backgroundLinearGradientColorStops: [0, '#ff7e5f', 0.5, '#feb47b', 1, '#ff7e5f'], // Example gradient
+        backgroundLinearGradientStartPoint: { x: 0, y: 0.5 },
+        backgroundLinearGradientEndPoint: { x: 1, y: 0.5 },
+        backgroundCornerRadius: 6,
+        hoverColor: '#2980b9', // Placeholder, gradient hover not implemented in this step
+        activeColor: '#1c638d', // Placeholder, gradient active not implemented in this step
+        fontColor: '#ffffff'
+    });
+    
+    // Remix Style Button
+    const remixButtonWidth = 250;
+    const remixButtonHeight = 50;
+    const remixCanvasPattern = document.createElement('canvas');
+    const patternContext = remixCanvasPattern.getContext('2d');
+
+    const gradientColors = ['#fcf6bd', '#d0f4de', '#a9def9', '#ff99c8', '#fcf6bd', '#e4c1f9', '#fcf6bd'];
+    // The pattern should be 6 times the width of the button to achieve the scrolling effect
+    remixCanvasPattern.width = remixButtonWidth * 6;
+    remixCanvasPattern.height = remixButtonHeight;
+
+    if (patternContext) {
+        const gradient = patternContext.createLinearGradient(0, 0, remixCanvasPattern.width, 0); // 270deg is from right to left, so 0 to width
+        const stopIncrement = 1 / (gradientColors.length -1);
+        gradientColors.forEach((color, index) => {
+            gradient.addColorStop(index * stopIncrement, color);
+        });
+        patternContext.fillStyle = gradient;
+        patternContext.fillRect(0, 0, remixCanvasPattern.width, remixCanvasPattern.height);
+    }
+
+    const remixStyleButton = new Button({
+        x: 50, // Adjusted x position
+        y: 250, // Adjusted y position
+        width: remixButtonWidth,
+        height: remixButtonHeight,
+        text: 'Remix Style Button',
+        backgroundPatternImageSource: remixCanvasPattern,
+        backgroundPatternRepeat: 'repeat-x', // We control the repeat via animation
+        backgroundPatternOffset: { x: 0, y: 0 },
+        backgroundCornerRadius: 999, // Make it fully rounded
+        fontColor: '#ffffff',
+        fontSize: 16,
+        fontStyle: 'bold',
+        // Shadow is not directly supported on text, but can be on the background rect via Component options
+        shadowEnabled: true,
+        shadowColor: 'rgba(0,0,0,0.3)',
+        shadowBlur: 8,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+    });
+
+    const period = 8000; // 8 seconds
+    const distanceToTravel = remixCanvasPattern.width - remixButtonWidth;
+    remixStyleButton.startPatternAnimation(period, distanceToTravel);
+    
     // Add to layer
     layer.add(basicButton);
     layer.add(roundedButton);
     layer.add(borderedButton);
     layer.add(largeButton);
     layer.add(textButton);
+    layer.add(gradientButton);
+    layer.add(remixStyleButton); // Add the new remix style button
     
     layer.draw();
     
@@ -127,7 +192,7 @@ function setupButtonDemo() {
         }
     });
     
-    return { stage, layer, buttons: [basicButton, roundedButton, borderedButton, largeButton, textButton] };
+    return { stage, layer, buttons: [basicButton, roundedButton, borderedButton, largeButton, textButton, gradientButton, remixStyleButton] };
 }
 
 // ===== Label Demo =====

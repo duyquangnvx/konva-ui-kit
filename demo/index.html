@@ -11471,6 +11471,7 @@ lib$1.exports = _FullInternals_1.Konva;
 var libExports = lib$1.exports;
 const Konva = /* @__PURE__ */ getDefaultExportFromCjs(libExports);
 class Component extends Konva.Group {
+  // Add property for animation
   constructor(options = {}) {
     super({
       x: options.x || 0,
@@ -11492,6 +11493,14 @@ class Component extends Konva.Group {
     this.shadowBlur = 0;
     this.shadowOffsetX = 0;
     this.shadowOffsetY = 0;
+    this.backgroundGradientEnabled = false;
+    this.backgroundLinearGradientColorStops = [];
+    this.backgroundLinearGradientStartPoint = { x: 0.5, y: 0 };
+    this.backgroundLinearGradientEndPoint = { x: 0.5, y: 1 };
+    this.backgroundPatternOffset = { x: 0, y: 0 };
+    this.backgroundPatternRepeat = "repeat";
+    this.backgroundPatternScale = { x: 1, y: 1 };
+    this.backgroundPatternRotation = 0;
     this.backgroundEnabled = options.backgroundEnabled || this.backgroundEnabled;
     this.backgroundColor = options.backgroundColor || this.backgroundColor;
     this.backgroundOpacity = options.backgroundOpacity || this.backgroundOpacity;
@@ -11503,14 +11512,22 @@ class Component extends Konva.Group {
     this.shadowBlur = options.shadowBlur || this.shadowBlur;
     this.shadowOffsetX = options.shadowOffsetX || this.shadowOffsetX;
     this.shadowOffsetY = options.shadowOffsetY || this.shadowOffsetY;
+    this.backgroundGradientEnabled = options.backgroundGradientEnabled ?? this.backgroundGradientEnabled;
+    this.backgroundLinearGradientColorStops = options.backgroundLinearGradientColorStops ?? this.backgroundLinearGradientColorStops;
+    this.backgroundLinearGradientStartPoint = options.backgroundLinearGradientStartPoint ?? { ...this.backgroundLinearGradientStartPoint };
+    this.backgroundLinearGradientEndPoint = options.backgroundLinearGradientEndPoint ?? { ...this.backgroundLinearGradientEndPoint };
+    this.backgroundPatternImageSource = options.backgroundPatternImageSource ?? this.backgroundPatternImageSource;
+    this.backgroundPatternOffset = options.backgroundPatternOffset ?? { ...this.backgroundPatternOffset };
+    this.backgroundPatternRepeat = options.backgroundPatternRepeat ?? this.backgroundPatternRepeat;
+    this.backgroundPatternScale = options.backgroundPatternScale ?? { ...this.backgroundPatternScale };
+    this.backgroundPatternRotation = options.backgroundPatternRotation ?? this.backgroundPatternRotation;
     this.initBackground();
   }
   initBackground() {
     this.background = new Konva.Rect({
       width: this.width(),
       height: this.height(),
-      fill: this.backgroundColor,
-      opacity: this.backgroundOpacity,
+      // fill and opacity are set via applyBackgroundFill and direct opacity setting
       cornerRadius: this.backgroundCornerRadius,
       stroke: this.backgroundBorderColor,
       strokeWidth: this.backgroundBorderWidth,
@@ -11520,7 +11537,58 @@ class Component extends Konva.Group {
       shadowOffsetY: this.shadowOffsetY,
       visible: this.backgroundEnabled
     });
+    this.applyBackgroundFill();
+    this.background.opacity(this.backgroundOpacity);
     this.add(this.background);
+  }
+  applyBackgroundFill() {
+    if (this.backgroundPatternImageSource) {
+      this.background.fill(null);
+      this.background.fillLinearGradientColorStops(void 0);
+      this.background.fillLinearGradientStartPoint(void 0);
+      this.background.fillLinearGradientEndPoint(void 0);
+      this.background.fillPriority("pattern");
+      const applyPatternProperties = (imageElement) => {
+        var _a;
+        this.background.fillPatternImage(imageElement);
+        this.background.fillPatternOffset(this.backgroundPatternOffset);
+        this.background.fillPatternRepeat(this.backgroundPatternRepeat);
+        this.background.fillPatternScale(this.backgroundPatternScale);
+        this.background.fillPatternRotation(this.backgroundPatternRotation);
+        (_a = this.getLayer()) == null ? void 0 : _a.batchDraw();
+      };
+      if (typeof this.backgroundPatternImageSource === "string") {
+        Konva.Image.fromURL(this.backgroundPatternImageSource, (imgNode) => {
+          const imageElement = imgNode.image();
+          if (imageElement) {
+            applyPatternProperties(imageElement);
+          } else {
+            console.error("Failed to load image for pattern from URL:", this.backgroundPatternImageSource);
+          }
+        });
+      } else {
+        applyPatternProperties(this.backgroundPatternImageSource);
+      }
+    } else if (this.backgroundGradientEnabled && this.backgroundLinearGradientColorStops && this.backgroundLinearGradientColorStops.length > 0) {
+      this.background.fillPatternImage(void 0);
+      this.background.fill(null);
+      this.background.fillLinearGradientStartPoint({
+        x: this.backgroundLinearGradientStartPoint.x * this.width(),
+        y: this.backgroundLinearGradientStartPoint.y * this.height()
+      });
+      this.background.fillLinearGradientEndPoint({
+        x: this.backgroundLinearGradientEndPoint.x * this.width(),
+        y: this.backgroundLinearGradientEndPoint.y * this.height()
+      });
+      this.background.fillLinearGradientColorStops(this.backgroundLinearGradientColorStops);
+      this.background.fillPriority("linear-gradient");
+    } else {
+      this.background.fillLinearGradientColorStops(void 0);
+      this.background.fillLinearGradientStartPoint(void 0);
+      this.background.fillLinearGradientEndPoint(void 0);
+      this.background.fill(this.backgroundColor);
+      this.background.fillPriority("color");
+    }
   }
   setBackgroundEnabled(backgroundEnabled) {
     this.backgroundEnabled = backgroundEnabled;
@@ -11529,7 +11597,7 @@ class Component extends Konva.Group {
   }
   setBackgroundColor(backgroundColor) {
     this.backgroundColor = backgroundColor;
-    this.background.fill(backgroundColor);
+    this.applyBackgroundFill();
     return this;
   }
   setBackgroundOpacity(backgroundOpacity) {
@@ -11550,6 +11618,51 @@ class Component extends Konva.Group {
   setBackgroundBorderColor(backgroundBorderColor) {
     this.backgroundBorderColor = backgroundBorderColor;
     this.background.stroke(backgroundBorderColor);
+    return this;
+  }
+  setBackgroundGradientEnabled(enabled) {
+    this.backgroundGradientEnabled = enabled;
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundLinearGradientColorStops(stops) {
+    this.backgroundLinearGradientColorStops = stops;
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundLinearGradientStartPoint(point) {
+    this.backgroundLinearGradientStartPoint = { ...point };
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundLinearGradientEndPoint(point) {
+    this.backgroundLinearGradientEndPoint = { ...point };
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundPatternImageSource(source) {
+    this.backgroundPatternImageSource = source;
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundPatternOffset(offset) {
+    this.backgroundPatternOffset = { ...offset };
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundPatternRepeat(repeat) {
+    this.backgroundPatternRepeat = repeat;
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundPatternScale(scale) {
+    this.backgroundPatternScale = { ...scale };
+    this.applyBackgroundFill();
+    return this;
+  }
+  setBackgroundPatternRotation(rotation) {
+    this.backgroundPatternRotation = rotation;
+    this.applyBackgroundFill();
     return this;
   }
   setShadowEnabled(shadowEnabled) {
@@ -11582,9 +11695,31 @@ class Component extends Konva.Group {
     this.height(size.height);
     this.background.width(size.width);
     this.background.height(size.height);
+    this.applyBackgroundFill();
     return this;
   }
   update(deltaTime) {
+  }
+  // New method for animation
+  startPatternAnimation(period = 8e3, distanceToTravel) {
+    if (this.animation) {
+      this.animation.stop();
+    }
+    this.animation = new Konva.Animation((frame) => {
+      if (!frame) return;
+      const time = frame.time;
+      let offsetX = -(time / period * distanceToTravel) % distanceToTravel;
+      this.setBackgroundPatternOffset({ x: offsetX, y: 0 });
+    }, this.getLayer());
+    if (this.animation) {
+      this.animation.start();
+    }
+  }
+  stopPatternAnimation() {
+    if (this.animation) {
+      this.animation.stop();
+      this.animation = void 0;
+    }
   }
 }
 class Button extends Component {
@@ -11597,8 +11732,14 @@ class Button extends Component {
     this.fontColor = "#000000";
     this.hoverColor = "#2980b9";
     this.activeColor = "#1c638d";
+    this.hoverActionEnabled = false;
+    this.hoverZoomScale = 0.05;
+    this.textAlign = "center";
+    this.textVerticalAlign = "middle";
     this.isHovered = false;
     this.isActive = false;
+    this.originalScale = { x: 1, y: 1 };
+    this.RECT_WIDTH_RATIO = 0.92;
     this.text = options.text || this.text;
     this.fontSize = options.fontSize || this.fontSize;
     this.fontFamily = options.fontFamily || this.fontFamily;
@@ -11606,6 +11747,11 @@ class Button extends Component {
     this.fontColor = options.fontColor || this.fontColor;
     this.hoverColor = options.hoverColor || this.hoverColor;
     this.activeColor = options.activeColor || this.activeColor;
+    this.hoverActionEnabled = options.hoverActionEnabled !== void 0 ? options.hoverActionEnabled : this.hoverActionEnabled;
+    this.hoverZoomScale = options.hoverZoomScale !== void 0 ? options.hoverZoomScale : this.hoverZoomScale;
+    this.textAlign = options.textAlign || this.textAlign;
+    this.textVerticalAlign = options.textVerticalAlign || this.textVerticalAlign;
+    this.saveOriginalScale();
     this.init();
   }
   init() {
@@ -11615,13 +11761,14 @@ class Button extends Component {
       fontFamily: this.fontFamily,
       fontStyle: this.fontStyle,
       fill: this.fontColor,
-      align: "center",
-      verticalAlign: "middle",
-      width: this.width(),
+      align: this.textAlign,
+      verticalAlign: this.textVerticalAlign,
+      width: this.width() * this.RECT_WIDTH_RATIO,
       height: this.height(),
       padding: 0
     });
     this.alignText();
+    this.setOffsetFromCenter();
     this.add(this.textNode);
     this.setupEventHandlers();
   }
@@ -11630,11 +11777,17 @@ class Button extends Component {
     this.on("mouseenter", () => {
       this.isHovered = true;
       this.updateButtonState();
+      if (this.hoverActionEnabled) {
+        this.applyHoverScale(true);
+      }
     });
     this.on("mouseleave", () => {
       this.isHovered = false;
       this.isActive = false;
       this.updateButtonState();
+      if (this.hoverActionEnabled) {
+        this.applyHoverScale(false);
+      }
     });
     this.on("mousedown touchstart", () => {
       this.isActive = true;
@@ -11652,6 +11805,29 @@ class Button extends Component {
       this.background.fill(this.hoverColor);
     } else {
       this.background.fill(this.backgroundColor);
+    }
+  }
+  saveOriginalScale() {
+    this.originalScale = {
+      x: this.scaleX(),
+      y: this.scaleY()
+    };
+  }
+  applyHoverScale(hovered) {
+    if (hovered) {
+      this.to({
+        scaleX: this.originalScale.x * (1 + this.hoverZoomScale),
+        scaleY: this.originalScale.y * (1 + this.hoverZoomScale),
+        duration: 0.1,
+        easing: Konva.Easings.EaseOut
+      });
+    } else {
+      this.to({
+        scaleX: this.originalScale.x,
+        scaleY: this.originalScale.y,
+        duration: 0.1,
+        easing: Konva.Easings.EaseIn
+      });
     }
   }
   setText(text) {
@@ -11674,6 +11850,14 @@ class Button extends Component {
     this.fontColor = fontColor;
     this.textNode.fill(fontColor);
   }
+  setTextAlign(textAlign) {
+    this.textAlign = textAlign;
+    this.textNode.align(textAlign);
+  }
+  setTextVerticalAlign(textVerticalAlign) {
+    this.textVerticalAlign = textVerticalAlign;
+    this.textNode.verticalAlign(textVerticalAlign);
+  }
   setHoverColor(hoverColor) {
     this.hoverColor = hoverColor;
     this.updateButtonState();
@@ -11682,12 +11866,30 @@ class Button extends Component {
     this.activeColor = activeColor;
     this.updateButtonState();
   }
+  setHoverActionEnabled(enabled) {
+    this.hoverActionEnabled = enabled;
+  }
+  setHoverZoomScale(scale) {
+    this.hoverZoomScale = scale;
+  }
   setSize(size) {
+    const pos = this.position();
+    const oldOffset = this.offset();
     super.setSize(size);
     const { width, height } = size;
     this.textNode.width(width);
     this.textNode.height(height);
     this.alignText();
+    this.offset({
+      x: width / 2,
+      y: height / 2
+    });
+    if (oldOffset.x !== 0 || oldOffset.y !== 0) {
+      this.position({
+        x: pos.x - oldOffset.x + width / 2,
+        y: pos.y - oldOffset.y + height / 2
+      });
+    }
     return this;
   }
   alignText() {
@@ -11695,6 +11897,17 @@ class Button extends Component {
     this.textNode.offsetY(this.textNode.height() / 2);
     this.textNode.x(this.width() / 2);
     this.textNode.y(this.height() / 2);
+  }
+  setOffsetFromCenter() {
+    this.offset({
+      x: this.width() / 2,
+      y: this.height() / 2
+    });
+    const pos = this.position();
+    this.position({
+      x: pos.x + this.width() / 2,
+      y: pos.y + this.height() / 2
+    });
   }
 }
 class Label2 extends Component {
@@ -11705,7 +11918,6 @@ class Label2 extends Component {
     this.fontFamily = "Arial";
     this.fontStyle = "normal";
     this.fontColor = "#000000";
-    this.fill = "#000000";
     this.align = "left";
     this.verticalAlign = "middle";
     this.padding = 0;
@@ -11716,7 +11928,6 @@ class Label2 extends Component {
     this.fontFamily = options.fontFamily || this.fontFamily;
     this.fontStyle = options.fontStyle || this.fontStyle;
     this.fontColor = options.fontColor || this.fontColor;
-    this.fill = options.fill || this.fill;
     this.align = options.align || this.align;
     this.verticalAlign = options.verticalAlign || this.verticalAlign;
     this.padding = options.padding || this.padding;
@@ -11730,7 +11941,8 @@ class Label2 extends Component {
       fontSize: this.fontSize,
       fontFamily: this.fontFamily,
       fontStyle: this.fontStyle,
-      fill: this.fill,
+      fontColor: this.fontColor,
+      fill: this.fontColor,
       align: this.align,
       verticalAlign: this.verticalAlign,
       padding: this.padding,
@@ -11773,10 +11985,6 @@ class Label2 extends Component {
   setFontColor(fontColor) {
     this.fontColor = fontColor;
     this.textNode.fill(fontColor);
-  }
-  setFill(fill) {
-    this.fill = fill;
-    this.textNode.fill(fill);
   }
   setAlign(align) {
     this.align = align;
@@ -11855,7 +12063,6 @@ class ImageView extends Component {
       return;
     }
     this.imageObject = new Image();
-    this.imageObject.crossOrigin = "Anonymous";
     this.imageObject.onload = () => {
       this.imageLoaded = true;
       this.updateImage();
@@ -11993,6 +12200,7 @@ class ScrollView extends Component {
     this.bounceStrength = 0.2;
     this.inertiaEnabled = true;
     this.inertiaDecay = 0.95;
+    this.clippingEnabled = true;
     this.contentWidth = 0;
     this.contentHeight = 0;
     this.scrollX = 0;
@@ -12028,18 +12236,21 @@ class ScrollView extends Component {
     this.bounceStrength = options.bounceStrength || this.bounceStrength;
     this.inertiaEnabled = options.inertiaEnabled !== void 0 ? options.inertiaEnabled : this.inertiaEnabled;
     this.inertiaDecay = options.inertiaDecay || this.inertiaDecay;
+    this.clippingEnabled = options.clippingEnabled !== void 0 ? options.clippingEnabled : this.clippingEnabled;
     this.contentWidth = options.contentWidth || this.width();
     this.contentHeight = options.contentHeight || this.height();
     this.onScrollCallback = options.onScroll;
     this.init();
   }
   init() {
-    this.clip({
-      x: 0,
-      y: 0,
-      width: this.width(),
-      height: this.height()
-    });
+    if (this.clippingEnabled) {
+      this.clip({
+        x: 0,
+        y: 0,
+        width: this.width(),
+        height: this.height()
+      });
+    }
     this.contentContainer = new Konva.Group({
       x: 0,
       y: 0,
@@ -12473,12 +12684,14 @@ class ScrollView extends Component {
   setSize(size) {
     super.setSize(size);
     const { width, height } = size;
-    this.clip({
-      x: 0,
-      y: 0,
-      width,
-      height
-    });
+    if (this.clippingEnabled) {
+      this.clip({
+        x: 0,
+        y: 0,
+        width,
+        height
+      });
+    }
     this.updateMaxScroll();
     if (this.verticalScrollbar) {
       this.verticalScrollbar.x(width - this.scrollbarWidth - 2);
@@ -12518,6 +12731,34 @@ class ScrollView extends Component {
     this.scrollDirection = direction;
     this.updateScrollbars();
   }
+  /**
+   * Set whether clipping is enabled
+   */
+  setClippingEnabled(enabled) {
+    this.clippingEnabled = enabled;
+    if (enabled) {
+      this.clip({
+        x: 0,
+        y: 0,
+        width: this.width(),
+        height: this.height()
+      });
+    } else {
+      this.clip({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      });
+    }
+    return this;
+  }
+  /**
+   * Get whether clipping is enabled
+   */
+  isClippingEnabled() {
+    return this.clippingEnabled;
+  }
 }
 class ListView extends ScrollView {
   constructor(options = {}) {
@@ -12536,6 +12777,7 @@ class ListView extends ScrollView {
     this.itemSpacing = 5;
     this.autoHeight = false;
     this.horizontal = false;
+    this.itemAlign = "left";
     this.renderedItems = /* @__PURE__ */ new Map();
     this.items = options.items || [];
     this.renderItem = options.renderItem;
@@ -12545,6 +12787,7 @@ class ListView extends ScrollView {
     this.itemSpacing = options.itemSpacing !== void 0 ? options.itemSpacing : this.itemSpacing;
     this.autoHeight = options.autoHeight !== void 0 ? options.autoHeight : this.autoHeight;
     this.horizontal = options.horizontal !== void 0 ? options.horizontal : this.horizontal;
+    this.itemAlign = options.itemAlign || this.itemAlign;
     this.itemsContainer = new Konva.Group();
     this.getContentContainer().add(this.itemsContainer);
     this.renderList();
@@ -12560,24 +12803,24 @@ class ListView extends ScrollView {
     }
     let totalWidth = 0;
     let totalHeight = 0;
+    const renderedItems = [];
     this.items.forEach((item, index) => {
       const renderedItem = this.renderItem(item, index);
+      const itemWidth = renderedItem.width() || this.itemHeight;
+      const itemHeight = renderedItem.height() || this.itemHeight;
+      renderedItems.push({
+        item,
+        node: renderedItem,
+        width: itemWidth,
+        height: itemHeight
+      });
       if (this.horizontal) {
-        renderedItem.x(totalWidth);
-        renderedItem.y(0);
-        const itemWidth = renderedItem.width() || this.itemHeight;
         totalWidth += itemWidth + this.itemSpacing;
-        totalHeight = Math.max(totalHeight, renderedItem.height() || this.itemHeight);
+        totalHeight = Math.max(totalHeight, itemHeight);
       } else {
-        renderedItem.x(0);
-        renderedItem.y(totalHeight);
-        const itemHeight = renderedItem.height() || this.itemHeight;
         totalHeight += itemHeight + this.itemSpacing;
-        totalWidth = Math.max(totalWidth, renderedItem.width() || this.width());
+        totalWidth = Math.max(totalWidth, itemWidth);
       }
-      this.attachEventHandlers(renderedItem, item, index);
-      this.itemsContainer.add(renderedItem);
-      this.renderedItems.set(index, renderedItem);
     });
     if (this.items.length > 0) {
       if (this.horizontal) {
@@ -12586,6 +12829,49 @@ class ListView extends ScrollView {
         totalHeight -= this.itemSpacing;
       }
     }
+    let currentOffset = 0;
+    renderedItems.forEach(({ item, node, width, height }, index) => {
+      let xPos = 0;
+      let yPos = 0;
+      const itemOffset = {
+        x: node.offsetX() || 0,
+        y: node.offsetY() || 0
+      };
+      if (this.horizontal) {
+        yPos = 0;
+        xPos = currentOffset;
+        if (this.itemAlign === "center") {
+          yPos = (totalHeight - height) / 2;
+        } else if (this.itemAlign === "right") {
+          yPos = totalHeight - height;
+        } else if (this.itemAlign === "stretch") {
+          node.height(totalHeight);
+        }
+        currentOffset += width + this.itemSpacing;
+      } else {
+        xPos = 0;
+        yPos = currentOffset;
+        if (this.itemAlign === "center") {
+          xPos = (this.width() - width) / 2;
+        } else if (this.itemAlign === "right") {
+          xPos = this.width() - width;
+        } else if (this.itemAlign === "stretch") {
+          node.width(this.width());
+        }
+        currentOffset += height + this.itemSpacing;
+      }
+      if (itemOffset.x > 0 || itemOffset.y > 0) {
+        node.position({
+          x: xPos + itemOffset.x,
+          y: yPos + itemOffset.y
+        });
+      } else {
+        node.position({ x: xPos, y: yPos });
+      }
+      this.attachEventHandlers(node, item, index);
+      this.itemsContainer.add(node);
+      this.renderedItems.set(index, node);
+    });
     this.setContentSize(
       this.horizontal ? totalWidth : this.width(),
       this.horizontal ? this.height() : totalHeight
@@ -12599,10 +12885,49 @@ class ListView extends ScrollView {
    */
   attachEventHandlers(node, item, index) {
     if (this.onItemClick) {
-      node.on("click tap", () => {
-        if (this.onItemClick) {
-          this.onItemClick(item, index);
+      node.on("mousedown touchstart", (e) => {
+        const evt = e.evt;
+        const isTouch = evt.type === "touchstart" || evt.type.includes("touch");
+        const touchId = isTouch ? "touch_start" : "mouse_start";
+        const position = isTouch ? { x: evt.touches[0].clientX, y: evt.touches[0].clientY } : { x: evt.clientX, y: evt.clientY };
+        node.setAttr(touchId, position);
+      });
+      node.on("mouseup touchend", (e) => {
+        const evt = e.evt;
+        const isTouch = evt.type === "touchend" || evt.type.includes("touch");
+        const touchId = isTouch ? "touch_start" : "mouse_start";
+        const startPos = node.getAttr(touchId);
+        if (!startPos) return;
+        let currentPos;
+        if (isTouch) {
+          const changedTouches = evt.changedTouches;
+          if (changedTouches.length === 0) return;
+          currentPos = { x: changedTouches[0].clientX, y: changedTouches[0].clientY };
+        } else {
+          currentPos = { x: evt.clientX, y: evt.clientY };
         }
+        const distance = Math.sqrt(
+          Math.pow(currentPos.x - startPos.x, 2) + Math.pow(currentPos.y - startPos.y, 2)
+        );
+        if (distance < 10) {
+          e.evt.preventDefault();
+          e.cancelBubble = true;
+          const stage = node.getStage();
+          if (!stage) return;
+          const stagePoint = stage.getPointerPosition();
+          if (!stagePoint) return;
+          const nodeBounds = node.getClientRect();
+          const buffer = 5;
+          if (stagePoint.x >= nodeBounds.x - buffer && stagePoint.x <= nodeBounds.x + nodeBounds.width + buffer && stagePoint.y >= nodeBounds.y - buffer && stagePoint.y <= nodeBounds.y + nodeBounds.height + buffer) {
+            if (this.onItemClick) {
+              this.onItemClick(item, index);
+            }
+          }
+        }
+        node.setAttr(touchId, null);
+      });
+      node.on("touchcancel", () => {
+        node.setAttr("touch_start", null);
       });
     }
     if (this.onItemHover) {
@@ -12755,6 +13080,22 @@ class ListView extends ScrollView {
     this.setScrollDirection(horizontal ? "horizontal" : "vertical");
     this.renderList();
   }
+  /**
+   * Set item alignment
+   */
+  setItemAlign(align) {
+    this.itemAlign = align;
+    this.renderList();
+  }
+  /**
+   * Get current item alignment
+   */
+  getItemAlign() {
+    return this.itemAlign;
+  }
+  doLayout() {
+    this.renderList();
+  }
 }
 function createStageAndLayer(containerId) {
   const container = document.getElementById(containerId);
@@ -12840,11 +13181,75 @@ function setupButtonDemo() {
     fontSize: 16,
     fontStyle: "bold"
   });
+  const gradientButton = new Button({
+    x: 250,
+    y: 190,
+    // Adjusted y position
+    width: 200,
+    height: 40,
+    text: "Gradient Button",
+    backgroundGradientEnabled: true,
+    backgroundLinearGradientColorStops: [0, "#ff7e5f", 0.5, "#feb47b", 1, "#ff7e5f"],
+    // Example gradient
+    backgroundLinearGradientStartPoint: { x: 0, y: 0.5 },
+    backgroundLinearGradientEndPoint: { x: 1, y: 0.5 },
+    backgroundCornerRadius: 6,
+    hoverColor: "#2980b9",
+    // Placeholder, gradient hover not implemented in this step
+    activeColor: "#1c638d",
+    // Placeholder, gradient active not implemented in this step
+    fontColor: "#ffffff"
+  });
+  const remixButtonWidth = 250;
+  const remixButtonHeight = 50;
+  const remixCanvasPattern = document.createElement("canvas");
+  const patternContext = remixCanvasPattern.getContext("2d");
+  const gradientColors = ["#fcf6bd", "#d0f4de", "#a9def9", "#ff99c8", "#fcf6bd", "#e4c1f9", "#fcf6bd"];
+  remixCanvasPattern.width = remixButtonWidth * 6;
+  remixCanvasPattern.height = remixButtonHeight;
+  if (patternContext) {
+    const gradient = patternContext.createLinearGradient(0, 0, remixCanvasPattern.width, 0);
+    const stopIncrement = 1 / (gradientColors.length - 1);
+    gradientColors.forEach((color, index) => {
+      gradient.addColorStop(index * stopIncrement, color);
+    });
+    patternContext.fillStyle = gradient;
+    patternContext.fillRect(0, 0, remixCanvasPattern.width, remixCanvasPattern.height);
+  }
+  const remixStyleButton = new Button({
+    x: 50,
+    // Adjusted x position
+    y: 250,
+    // Adjusted y position
+    width: remixButtonWidth,
+    height: remixButtonHeight,
+    text: "Remix Style Button",
+    backgroundPatternImageSource: remixCanvasPattern,
+    backgroundPatternRepeat: "repeat-x",
+    // We control the repeat via animation
+    backgroundPatternOffset: { x: 0, y: 0 },
+    backgroundCornerRadius: 999,
+    // Make it fully rounded
+    fontColor: "#ffffff",
+    fontSize: 16,
+    fontStyle: "bold",
+    // Shadow is not directly supported on text, but can be on the background rect via Component options
+    shadowEnabled: true,
+    shadowColor: "rgba(0,0,0,0.3)",
+    shadowBlur: 8,
+    shadowOffsetX: 0,
+    shadowOffsetY: 4
+  });
+  const period = 8e3;
+  const distanceToTravel = remixCanvasPattern.width - remixButtonWidth;
+  remixStyleButton.startPatternAnimation(period, distanceToTravel);
   layer.add(basicButton);
   layer.add(roundedButton);
   layer.add(borderedButton);
   layer.add(largeButton);
   layer.add(textButton);
+  layer.add(gradientButton);
+  layer.add(remixStyleButton);
   layer.draw();
   window.addEventListener("resize", () => {
     const container = document.getElementById("button-demo");
@@ -12854,7 +13259,7 @@ function setupButtonDemo() {
       layer.draw();
     }
   });
-  return { stage, layer, buttons: [basicButton, roundedButton, borderedButton, largeButton, textButton] };
+  return { stage, layer, buttons: [basicButton, roundedButton, borderedButton, largeButton, textButton, gradientButton, remixStyleButton] };
 }
 function setupLabelDemo() {
   const { stage, layer } = createStageAndLayer("label-demo");

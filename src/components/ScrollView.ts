@@ -24,6 +24,7 @@ export type ScrollViewOptions = ComponentOptions & {
     contentHeight?: number;
     
     onScroll?: (scrollX: number, scrollY: number) => void;
+    clippingEnabled?: boolean;
 };
 
 interface TouchPoint {
@@ -57,6 +58,7 @@ export class ScrollView extends Component<ScrollViewOptions> {
     private bounceStrength: number = 0.2;
     private inertiaEnabled: boolean = true;
     private inertiaDecay: number = 0.95; // Changed from 0.95 to 0.95 for better inertia feel
+    private clippingEnabled: boolean = true; // Default: clipping is enabled
 
     // Content size
     private contentWidth: number = 0;
@@ -114,6 +116,7 @@ export class ScrollView extends Component<ScrollViewOptions> {
         this.bounceStrength = options.bounceStrength || this.bounceStrength;
         this.inertiaEnabled = options.inertiaEnabled !== undefined ? options.inertiaEnabled : this.inertiaEnabled;
         this.inertiaDecay = options.inertiaDecay || this.inertiaDecay;
+        this.clippingEnabled = options.clippingEnabled !== undefined ? options.clippingEnabled : this.clippingEnabled;
 
         // Set content size
         this.contentWidth = options.contentWidth || this.width();
@@ -128,12 +131,14 @@ export class ScrollView extends Component<ScrollViewOptions> {
 
     private init() {
         // Add clip to prevent content from appearing outside the scroll view
-        this.clip({
-            x: 0,
-            y: 0,
-            width: this.width(),
-            height: this.height(),
-        });
+        if (this.clippingEnabled) {
+            this.clip({
+                x: 0,
+                y: 0,
+                width: this.width(),
+                height: this.height(),
+            });
+        }
         
         // Create content container
         this.contentContainer = new Konva.Group({
@@ -737,13 +742,15 @@ export class ScrollView extends Component<ScrollViewOptions> {
         
         const { width, height } = size;
         
-        // Update clip
-        this.clip({
-            x: 0,
-            y: 0,
-            width,
-            height,
-        });
+        // Update clip if clipping is enabled
+        if (this.clippingEnabled) {
+            this.clip({
+                x: 0,
+                y: 0,
+                width,
+                height,
+            });
+        }
         
         // Update max scroll values
         this.updateMaxScroll();
@@ -798,6 +805,40 @@ export class ScrollView extends Component<ScrollViewOptions> {
     setScrollDirection(direction: 'vertical' | 'horizontal' | 'both') {
         this.scrollDirection = direction;
         this.updateScrollbars();
+    }
+
+    /**
+     * Set whether clipping is enabled
+     */
+    setClippingEnabled(enabled: boolean): this {
+        this.clippingEnabled = enabled;
+        
+        if (enabled) {
+            // Apply clip
+            this.clip({
+                x: 0,
+                y: 0,
+                width: this.width(),
+                height: this.height(),
+            });
+        } else {
+            // Remove clip
+            this.clip({
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            });
+        }
+        
+        return this;
+    }
+
+    /**
+     * Get whether clipping is enabled
+     */
+    isClippingEnabled(): boolean {
+        return this.clippingEnabled;
     }
 }
 

@@ -21,7 +21,6 @@ export class Label extends Component<LabelOptions> {
     private fontFamily: string = 'Arial';
     private fontStyle: string = 'normal';
     private fontColor: string = '#000000';
-    private fill: string = '#000000';
     private align: string = 'left';
     private verticalAlign: string = 'middle';
     private padding: number = 0;
@@ -39,7 +38,6 @@ export class Label extends Component<LabelOptions> {
         this.fontFamily = options.fontFamily || this.fontFamily;
         this.fontStyle = options.fontStyle || this.fontStyle;
         this.fontColor = options.fontColor || this.fontColor;
-        this.fill = options.fill || this.fill;
         this.align = options.align || this.align;
         this.verticalAlign = options.verticalAlign || this.verticalAlign;
         this.padding = options.padding || this.padding;
@@ -57,7 +55,8 @@ export class Label extends Component<LabelOptions> {
             fontSize: this.fontSize,
             fontFamily: this.fontFamily,
             fontStyle: this.fontStyle,
-            fill: this.fill,
+            fontColor: this.fontColor,
+            fill: this.fontColor,
             align: this.align,
             verticalAlign: this.verticalAlign,
             padding: this.padding,
@@ -112,11 +111,6 @@ export class Label extends Component<LabelOptions> {
     setFontColor(fontColor: string) {
         this.fontColor = fontColor;
         this.textNode.fill(fontColor);
-    }
-
-    setFill(fill: string) {
-        this.fill = fill;
-        this.textNode.fill(fill);
     }
     
     setAlign(align: string) {

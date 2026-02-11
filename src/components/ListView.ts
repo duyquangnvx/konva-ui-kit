@@ -1,6 +1,13 @@
 import Konva from "konva";
 import { ScrollView, ScrollViewOptions } from "./ScrollView";
 
+export enum ItemAlign {
+    LEFT = 'left',
+    CENTER = 'center',
+    RIGHT = 'right',
+    STRETCH = 'stretch'
+}
+
 export type ListViewRenderItem = (item: any, index: number) => Konva.Group | Konva.Shape;
 
 export type ListViewOptions = ScrollViewOptions & {
@@ -12,6 +19,7 @@ export type ListViewOptions = ScrollViewOptions & {
     itemSpacing?: number;
     autoHeight?: boolean;
     horizontal?: boolean;
+    itemAlign?: ItemAlign;
 }
 
 export class ListView extends ScrollView {
@@ -25,6 +33,7 @@ export class ListView extends ScrollView {
     private itemSpacing: number = 5;
     private autoHeight: boolean = false;
     private horizontal: boolean = false;
+    private itemAlign: ItemAlign = ItemAlign.LEFT;
     private itemsContainer: Konva.Group;
     private renderedItems: Map<number, Konva.Node> = new Map();
 
@@ -52,6 +61,7 @@ export class ListView extends ScrollView {
         this.itemSpacing = options.itemSpacing !== undefined ? options.itemSpacing : this.itemSpacing;
         this.autoHeight = options.autoHeight !== undefined ? options.autoHeight : this.autoHeight;
         this.horizontal = options.horizontal !== undefined ? options.horizontal : this.horizontal;
+        this.itemAlign = options.itemAlign || this.itemAlign;
         
         // Create container for list items
         this.itemsContainer = new Konva.Group();
@@ -77,35 +87,29 @@ export class ListView extends ScrollView {
         let totalWidth = 0;
         let totalHeight = 0;
         
-        // Render each item
+        // First pass: render items and calculate sizes
+        const renderedItems: { item: any; node: Konva.Group | Konva.Shape; width: number; height: number }[] = [];
+        
         this.items.forEach((item, index) => {
             const renderedItem = this.renderItem!(item, index);
+            const itemWidth = renderedItem.width() || this.itemHeight;
+            const itemHeight = renderedItem.height() || this.itemHeight;
             
-            // Set position based on orientation
+            renderedItems.push({
+                item,
+                node: renderedItem,
+                width: itemWidth,
+                height: itemHeight
+            });
+            
+            // Update total dimensions
             if (this.horizontal) {
-                renderedItem.x(totalWidth);
-                renderedItem.y(0);
-                
-                // Update width for next item
-                const itemWidth = renderedItem.width() || this.itemHeight;
                 totalWidth += itemWidth + this.itemSpacing;
-                totalHeight = Math.max(totalHeight, renderedItem.height() || this.itemHeight);
+                totalHeight = Math.max(totalHeight, itemHeight);
             } else {
-                renderedItem.x(0);
-                renderedItem.y(totalHeight);
-                
-                // Update height for next item
-                const itemHeight = renderedItem.height() || this.itemHeight;
                 totalHeight += itemHeight + this.itemSpacing;
-                totalWidth = Math.max(totalWidth, renderedItem.width() || this.width());
+                totalWidth = Math.max(totalWidth, itemWidth);
             }
-            
-            // Add event handlers
-            this.attachEventHandlers(renderedItem, item, index);
-            
-            // Add to container and keep reference
-            this.itemsContainer.add(renderedItem);
-            this.renderedItems.set(index, renderedItem);
         });
         
         // Remove last spacing
@@ -116,6 +120,77 @@ export class ListView extends ScrollView {
                 totalHeight -= this.itemSpacing;
             }
         }
+        
+        // Second pass: position items with alignment
+        let currentOffset = 0;
+        
+        renderedItems.forEach(({ item, node, width, height }, index) => {
+            let xPos = 0;
+            let yPos = 0;
+            
+            // Get item offset if it exists
+            const itemOffset = {
+                x: node.offsetX() || 0,
+                y: node.offsetY() || 0
+            };
+            
+            // Store original offset to restore it later if needed
+            const originalOffsetX = itemOffset.x;
+            const originalOffsetY = itemOffset.y;
+            
+            if (this.horizontal) {
+                // For horizontal lists
+                yPos = 0;
+                xPos = currentOffset;
+                
+                // Apply vertical alignment
+                if (this.itemAlign === ItemAlign.CENTER) {
+                    yPos = (totalHeight - height) / 2;
+                } else if (this.itemAlign === ItemAlign.RIGHT) {
+                    yPos = totalHeight - height;
+                } else if (this.itemAlign === ItemAlign.STRETCH) {
+                    node.height(totalHeight);
+                }
+                
+                currentOffset += width + this.itemSpacing;
+            } else {
+                // For vertical lists
+                xPos = 0;
+                yPos = currentOffset;
+                
+                // Apply horizontal alignment
+                if (this.itemAlign === ItemAlign.CENTER) {
+                    xPos = (this.width() - width) / 2;
+                } else if (this.itemAlign === ItemAlign.RIGHT) {
+                    xPos = this.width() - width;
+                } else if (this.itemAlign === ItemAlign.STRETCH) {
+                    node.width(this.width());
+                }
+                
+                currentOffset += height + this.itemSpacing;
+            }
+            
+            // If the node is already using offset for centering (like Button), 
+            // we need to adjust the position to account for that offset
+            if (itemOffset.x > 0 || itemOffset.y > 0) {
+                // When an item has offset, its logical position (the one we set with position())
+                // needs to be adjusted so that its visual position is correct
+                node.position({
+                    x: xPos + itemOffset.x,
+                    y: yPos + itemOffset.y
+                });
+            } else {
+                // For nodes without offset, set position directly
+                node.position({ x: xPos, y: yPos });
+            }
+            
+            // Add event handlers
+            this.attachEventHandlers(node, item, index);
+            
+            // Add to container and keep reference
+            this.itemsContainer.add(node);
+            this.renderedItems.set(index, node);
+        });
         
         // Update content size
         this.setContentSize(
@@ -132,17 +207,98 @@ export class ListView extends ScrollView {
     /**
      * Attach event handlers to list items
      */
-    private attachEventHandlers(node: Konva.Node, item: any, index: number): void {
-        // Click event
+    private attachEventHandlers(node: Konva.Group | Konva.Shape, item: any, index: number): void {
+        // Click/tap event with better touch support
         if (this.onItemClick) {
-            node.on('click tap', () => {
-                if (this.onItemClick) {
-                    this.onItemClick(item, index);
+            // Use separate handlers for mouse and touch events
+            node.on('mousedown touchstart', (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+                // Store the initial position for tracking if this is a click or a scroll
+                const evt = e.evt;
+                const isTouch = evt.type === 'touchstart' || evt.type.includes('touch');
+                
+                // Store initial position
+                const touchId = isTouch ? 'touch_start' : 'mouse_start';
+                const position = isTouch 
+                    ? { x: (evt as TouchEvent).touches[0].clientX, y: (evt as TouchEvent).touches[0].clientY }
+                    : { x: (evt as MouseEvent).clientX, y: (evt as MouseEvent).clientY };
+                    
+                node.setAttr(touchId, position);
+                
+                // Don't prevent default yet, to allow scrolling
+            });
+            
+            // Detect click/tap end
+            node.on('mouseup touchend', (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+                const evt = e.evt;
+                const isTouch = evt.type === 'touchend' || evt.type.includes('touch');
+                
+                // Retrieve initial position
+                const touchId = isTouch ? 'touch_start' : 'mouse_start';
+                const startPos = node.getAttr(touchId);
+                
+                if (!startPos) return; // No start position recorded
+                
+                // Get current position
+                let currentPos;
+                if (isTouch) {
+                    // For touchend, we need to use changedTouches since touches will be empty
+                    const changedTouches = (evt as TouchEvent).changedTouches;
+                    if (changedTouches.length === 0) return;
+                    currentPos = { x: changedTouches[0].clientX, y: changedTouches[0].clientY };
+                } else {
+                    currentPos = { x: (evt as MouseEvent).clientX, y: (evt as MouseEvent).clientY };
                 }
+                
+                // Calculate distance moved
+                const distance = Math.sqrt(
+                    Math.pow(currentPos.x - startPos.x, 2) + 
+                    Math.pow(currentPos.y - startPos.y, 2)
+                );
+                
+                // If moved less than threshold, consider it a click
+                if (distance < 10) { // 10px threshold
+                    // Prevent default behavior for touch events to avoid double actions
+                    e.evt.preventDefault();
+                    e.cancelBubble = true;
+                    
+                    // Check if the touch point is within this node's bounds
+                    // Convert global position to stage position
+                    const stage = node.getStage();
+                    if (!stage) return;
+                    
+                    // Get pointer position in stage coordinates
+                    const stagePoint = stage.getPointerPosition();
+                    if (!stagePoint) return;
+                    
+                    // Now check if this point is inside the node
+                    const nodeBounds = node.getClientRect();
+                    
+                    // Use a simple bounds check to make touch detection more forgiving on mobile
+                    // Add a small buffer (5px) to the bounds
+                    const buffer = 5;
+                    if (
+                        stagePoint.x >= nodeBounds.x - buffer &&
+                        stagePoint.x <= nodeBounds.x + nodeBounds.width + buffer &&
+                        stagePoint.y >= nodeBounds.y - buffer &&
+                        stagePoint.y <= nodeBounds.y + nodeBounds.height + buffer
+                    ) {
+                        if (this.onItemClick) {
+                            this.onItemClick(item, index);
+                        }
+                    }
+                }
+                
+                // Clear stored position
+                node.setAttr(touchId, null);
+            });
+            
+            // Also handle touch cancel
+            node.on('touchcancel', () => {
+                node.setAttr('touch_start', null);
             });
         }
         
-        // Hover events
+        // Hover events - only for mouse, not touch
         if (this.onItemHover) {
             node.on('mouseenter', () => {
                 if (this.onItemHover) {
@@ -151,7 +307,7 @@ export class ListView extends ScrollView {
             });
         }
         
-        // Add pointer cursor
+        // Add pointer cursor for clickable items
         if (this.onItemClick) {
             node.on('mouseenter', () => {
                 const stage = node.getStage();
@@ -323,6 +479,25 @@ export class ListView extends ScrollView {
     setHorizontal(horizontal: boolean): void {
         this.horizontal = horizontal;
         this.setScrollDirection(horizontal ? 'horizontal' : 'vertical');
+        this.renderList();
+    }
+
+    /**
+     * Set item alignment
+     */
+    setItemAlign(align: ItemAlign): void {
+        this.itemAlign = align;
+        this.renderList();
+    }
+
+    /**
+     * Get current item alignment
+     */
+    getItemAlign(): ItemAlign {
+        return this.itemAlign;
+    }
+
+    doLayout(): void {
         this.renderList();
     }
 }

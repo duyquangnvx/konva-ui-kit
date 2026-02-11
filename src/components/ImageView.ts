@@ -60,7 +60,7 @@ export class ImageView extends Component<ImageViewOptions> {
 
         // Otherwise, create a new image object
         this.imageObject = new Image();
-        this.imageObject.crossOrigin = 'Anonymous';     // To prevent CORS issues
+        // this.imageObject.crossOrigin = 'Anonymous';     // To prevent CORS issues
         this.imageObject.onload = () => {
             this.imageLoaded = true;
             this.updateImage();
